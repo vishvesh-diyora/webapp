@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:webapp/features/dashboard/widgets/device_preview_insets.dart';
+import 'package:webapp/features/dashboard/widgets/portfolio/portfolio_screen_background.dart';
 
 const _frameShadow = [
   BoxShadow(
@@ -92,7 +94,11 @@ class _DeviceFitCanvas extends StatelessWidget {
 
 /// Latest iPhone-style frame (Dynamic Island, thin bezels, home indicator).
 class IPhonePreviewFrame extends StatelessWidget {
-  const IPhonePreviewFrame({super.key, required this.child});
+  const IPhonePreviewFrame({
+    super.key,
+    required this.child,
+    this.screenBackground,
+  });
 
   static const double designWidth = 330;
   static const double designHeight = 720;
@@ -100,6 +106,7 @@ class IPhonePreviewFrame extends StatelessWidget {
   static const double fitHeight = 752;
 
   final Widget child;
+  final PreviewScreenBackground? screenBackground;
 
   @override
   Widget build(BuildContext context) {
@@ -152,23 +159,26 @@ class IPhonePreviewFrame extends StatelessWidget {
                         child: Stack(
                           fit: StackFit.expand,
                           children: [
-                            ColoredBox(
-                              color: const Color(0xFFF8FAFC),
-                              child: Column(
-                                children: [
-                                  const SizedBox(height: 14),
-                                  Expanded(child: ClipRect(child: child)),
-                                  const SizedBox(height: 10),
-                                  const _HomeIndicator(),
-                                  const SizedBox(height: 8),
-                                ],
-                              ),
+                            _ScreenFill(background: screenBackground),
+                            Padding(
+                              padding: DevicePreviewInsets.iphoneContent,
+                              child: child,
                             ),
-                            const Positioned(
+                            Positioned(
                               top: 10,
                               left: 0,
                               right: 0,
-                              child: _DynamicIsland(),
+                              child: const _DynamicIsland(),
+                            ),
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: 8,
+                              child: Center(
+                                child: _HomeIndicator(
+                                  darkScreen: screenBackground?.isDark ?? false,
+                                ),
+                              ),
                             ),
                           ],
                         ),
@@ -204,7 +214,11 @@ class IPhonePreviewFrame extends StatelessWidget {
 
 /// iPad Pro-style frame (portrait, thin bezels).
 class TabletPreviewFrame extends StatelessWidget {
-  const TabletPreviewFrame({super.key, required this.child});
+  const TabletPreviewFrame({
+    super.key,
+    required this.child,
+    this.screenBackground,
+  });
 
   static const double designWidth = 500;
   static const double designHeight = 680;
@@ -212,6 +226,7 @@ class TabletPreviewFrame extends StatelessWidget {
   static const double fitHeight = 712;
 
   final Widget child;
+  final PreviewScreenBackground? screenBackground;
 
   @override
   Widget build(BuildContext context) {
@@ -250,32 +265,35 @@ class TabletPreviewFrame extends StatelessWidget {
                     padding: const EdgeInsets.all(8),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(8),
-                      child: ColoredBox(
-                        color: const Color(0xFFF8FAFC),
-                        child: Column(
-                          children: [
-                            const SizedBox(height: 6),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Container(
-                                  width: 9,
-                                  height: 9,
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF0B0B0C),
-                                    shape: BoxShape.circle,
-                                    border: Border.all(
-                                      color: const Color(0xFF2C2C2E),
-                                      width: 1,
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          _ScreenFill(background: screenBackground),
+                          Column(
+                            children: [
+                              const SizedBox(height: 6),
+                              Row(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Container(
+                                    width: 9,
+                                    height: 9,
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFF0B0B0C),
+                                      shape: BoxShape.circle,
+                                      border: Border.all(
+                                        color: const Color(0xFF2C2C2E),
+                                        width: 1,
+                                      ),
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 8),
-                            Expanded(child: ClipRect(child: child)),
-                          ],
-                        ),
+                                ],
+                              ),
+                              const SizedBox(height: 8),
+                              Expanded(child: child),
+                            ],
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -321,7 +339,11 @@ class TabletPreviewFrame extends StatelessWidget {
 
 /// PC monitor frame with thin bezels and stand for web preview.
 class DesktopPreviewFrame extends StatelessWidget {
-  const DesktopPreviewFrame({super.key, required this.child});
+  const DesktopPreviewFrame({
+    super.key,
+    required this.child,
+    this.screenBackground,
+  });
 
   static const double designWidth = 600;
   static const double designHeight = 420;
@@ -329,6 +351,7 @@ class DesktopPreviewFrame extends StatelessWidget {
   static const double fitHeight = 520;
 
   final Widget child;
+  final PreviewScreenBackground? screenBackground;
 
   @override
   Widget build(BuildContext context) {
@@ -360,9 +383,12 @@ class DesktopPreviewFrame extends StatelessWidget {
                     borderRadius: BorderRadius.circular(6),
                     child: SizedBox(
                       height: 320,
-                      child: ColoredBox(
-                        color: const Color(0xFFF8FAFC),
-                        child: ClipRect(child: child),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          _ScreenFill(background: screenBackground),
+                          child,
+                        ],
                       ),
                     ),
                   ),
@@ -468,7 +494,9 @@ class _DynamicIsland extends StatelessWidget {
 }
 
 class _HomeIndicator extends StatelessWidget {
-  const _HomeIndicator();
+  const _HomeIndicator({this.darkScreen = false});
+
+  final bool darkScreen;
 
   @override
   Widget build(BuildContext context) {
@@ -476,9 +504,32 @@ class _HomeIndicator extends StatelessWidget {
       width: 132,
       height: 5,
       decoration: BoxDecoration(
-        color: const Color(0xFF0F172A).withValues(alpha: 0.22),
+        color: darkScreen
+            ? Colors.white.withValues(alpha: 0.35)
+            : const Color(0xFF0F172A).withValues(alpha: 0.22),
         borderRadius: BorderRadius.circular(3),
       ),
+    );
+  }
+}
+
+class _ScreenFill extends StatelessWidget {
+  const _ScreenFill({this.background});
+
+  final PreviewScreenBackground? background;
+
+  @override
+  Widget build(BuildContext context) {
+    final bg = background;
+    if (bg?.decoration != null) {
+      return DecoratedBox(
+        decoration: bg!.decoration!,
+        child: const SizedBox.expand(),
+      );
+    }
+    return ColoredBox(
+      color: bg?.color ?? const Color(0xFFF8FAFC),
+      child: const SizedBox.expand(),
     );
   }
 }

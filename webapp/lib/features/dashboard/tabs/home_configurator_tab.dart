@@ -367,11 +367,12 @@ class _CategoryGridTile extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: () {
-          final template = data.template;
-          if (template == null) return;
           Navigator.of(context).push(
             MaterialPageRoute<void>(
-              builder: (_) => CategoryDetailScreen(template: template),
+              builder: (_) => CategoryDetailScreen(
+                categoryType: data.type,
+                initialTemplate: data.template,
+              ),
             ),
           );
         },

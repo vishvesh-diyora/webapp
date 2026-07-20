@@ -1,14 +1,38 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:webapp/features/dashboard/models/category_template.dart';
+import 'package:webapp/features/dashboard/widgets/portfolio/portfolio_renderer.dart';
 
-/// Template summary + data blocks shown inside device preview screens.
+/// Template preview shown inside device frames or detail panels.
 class CategoryTemplatePreviewContent extends StatelessWidget {
   const CategoryTemplatePreviewContent({
     super.key,
     required this.template,
     this.compact = false,
+    this.mobileProfileLayout = true,
+  });
+
+  final CategoryTemplate template;
+  final bool compact;
+  final bool mobileProfileLayout;
+
+  @override
+  Widget build(BuildContext context) {
+    if (template.type == CategoryType.portfolio) {
+      return PortfolioTemplateRenderer(
+        template: template,
+        compact: compact,
+        mobileProfileLayout: mobileProfileLayout,
+      );
+    }
+
+    return _MetadataPreview(template: template, compact: compact);
+  }
+}
+
+class _MetadataPreview extends StatelessWidget {
+  const _MetadataPreview({
+    required this.template,
+    required this.compact,
   });
 
   final CategoryTemplate template;
@@ -33,8 +57,6 @@ class CategoryTemplatePreviewContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final jsonString =
-        const JsonEncoder.withIndent('  ').convert(template.toJson());
     final padding = compact ? 12.0 : 16.0;
     final sectionGap = compact ? 10.0 : 14.0;
 
@@ -115,20 +137,6 @@ class CategoryTemplatePreviewContent extends StatelessWidget {
                   ),
                 ),
             ],
-          ),
-        ),
-        SizedBox(height: sectionGap),
-        _SectionCard(
-          compact: compact,
-          title: 'Full JSON',
-          child: SelectableText(
-            jsonString,
-            style: TextStyle(
-              fontFamily: 'monospace',
-              fontSize: compact ? 9 : 11,
-              height: 1.4,
-              color: const Color(0xFF0F172A),
-            ),
           ),
         ),
       ],

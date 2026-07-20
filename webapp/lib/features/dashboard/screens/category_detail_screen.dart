@@ -1,8 +1,11 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:webapp/features/dashboard/data/category_templates_data.dart';
 import 'package:webapp/features/dashboard/models/category_template.dart';
 import 'package:webapp/features/dashboard/widgets/category_template_preview_content.dart';
+import 'package:webapp/features/dashboard/widgets/portfolio/portfolio_screen_background.dart';
 import 'package:webapp/features/dashboard/widgets/preview_device_frame.dart';
+import 'package:webapp/features/dashboard/widgets/template_selection_panel.dart';
 
 enum _PreviewMode { mobile, tablet, web }
 
@@ -11,9 +14,14 @@ const _bottomSheetAnimationDuration = Duration(milliseconds: 300);
 
 /// Category detail with device preview and responsive detail panel.
 class CategoryDetailScreen extends StatefulWidget {
-  const CategoryDetailScreen({super.key, required this.template});
+  const CategoryDetailScreen({
+    super.key,
+    required this.categoryType,
+    this.initialTemplate,
+  });
 
-  final CategoryTemplate template;
+  final int categoryType;
+  final CategoryTemplate? initialTemplate;
 
   @override
   State<CategoryDetailScreen> createState() => _CategoryDetailScreenState();
@@ -25,6 +33,17 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
 
   _PreviewMode? _selectedMode;
   bool _isDetailPanelExpanded = true;
+  late CategoryTemplate _selectedTemplate;
+  late List<CategoryTemplate> _templates;
+
+  @override
+  void initState() {
+    super.initState();
+    _templates = CategoryTemplatesData.byCategoryType(widget.categoryType);
+    _selectedTemplate = widget.initialTemplate ??
+        _templates.firstOrNull ??
+        CategoryTemplatesData.byType(widget.categoryType)!;
+  }
 
   _PreviewMode _defaultMode(BuildContext context) {
     final width = MediaQuery.sizeOf(context).width;
@@ -33,38 +52,41 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     return _PreviewMode.web;
   }
 
-  @override
-  void didChangeDependencies() {
-    super.didChangeDependencies();
-    _selectedMode ??= _defaultMode(context);
-  }
-
   Widget _buildPreview(_PreviewMode mode, BoxConstraints constraints) {
     final content = CategoryTemplatePreviewContent(
-      template: widget.template,
-      compact: true,
+      key: ValueKey(
+        '${_selectedTemplate.type}_${_selectedTemplate.templateType}_$mode',
+      ),
+      template: _selectedTemplate,
+      compact: mode == _PreviewMode.mobile,
+      mobileProfileLayout: mode == _PreviewMode.mobile,
+    );
+
+    final screenBg = PreviewScreenBackground.forTemplate(
+      _selectedTemplate,
+      mobileProfileLayout: mode == _PreviewMode.mobile,
     );
 
     final (fitWidth, fitHeight, frame) = switch (mode) {
       _PreviewMode.mobile => (
           IPhonePreviewFrame.fitWidth,
           IPhonePreviewFrame.fitHeight,
-          IPhonePreviewFrame(child: content),
+          IPhonePreviewFrame(screenBackground: screenBg, child: content),
         ),
       _PreviewMode.tablet => (
           TabletPreviewFrame.fitWidth,
           TabletPreviewFrame.fitHeight,
-          TabletPreviewFrame(child: content),
+          TabletPreviewFrame(screenBackground: screenBg, child: content),
         ),
       _PreviewMode.web => (
           DesktopPreviewFrame.fitWidth,
           DesktopPreviewFrame.fitHeight,
-          DesktopPreviewFrame(child: content),
+          DesktopPreviewFrame(screenBackground: screenBg, child: content),
         ),
     };
 
     return _FittedDevicePreview(
-      key: ValueKey(mode.name),
+      key: ValueKey('${mode.name}_${_selectedTemplate.templateType}'),
       maxWidth: constraints.maxWidth,
       maxHeight: constraints.maxHeight,
       fitWidth: fitWidth,
@@ -74,11 +96,18 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _selectedMode ??= _defaultMode(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
     final selectedMode = _selectedMode ?? _defaultMode(context);
 
     return Scaffold(
       appBar: AppBar(
+        title: Text(_selectedTemplate.name),
         actions: const [
           Padding(
             padding: EdgeInsets.only(right: 12),
@@ -112,7 +141,11 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
             );
 
             final detailPanel = _CategoryDetailPanel(
-              template: widget.template,
+              templates: _templates,
+              selectedTemplate: _selectedTemplate,
+              onTemplateSelected: (template) {
+                setState(() => _selectedTemplate = template);
+              },
               isBottomSheet: isPortraitLayout,
               isExpanded: _isDetailPanelExpanded,
               onToggle: isPortraitLayout
@@ -218,13 +251,17 @@ class _DevicePreviewSection extends StatelessWidget {
 
 class _CategoryDetailPanel extends StatelessWidget {
   const _CategoryDetailPanel({
-    required this.template,
+    required this.templates,
+    required this.selectedTemplate,
+    required this.onTemplateSelected,
     required this.isBottomSheet,
     required this.isExpanded,
     this.onToggle,
   });
 
-  final CategoryTemplate template;
+  final List<CategoryTemplate> templates;
+  final CategoryTemplate selectedTemplate;
+  final ValueChanged<CategoryTemplate> onTemplateSelected;
   final bool isBottomSheet;
   final bool isExpanded;
   final VoidCallback? onToggle;
@@ -264,7 +301,12 @@ class _CategoryDetailPanel extends StatelessWidget {
           Expanded(
             child: IgnorePointer(
               ignoring: isBottomSheet && !isExpanded,
-              child: CategoryTemplatePreviewContent(template: template),
+              child: TemplateSelectionPanel(
+                templates: templates,
+                selected: selectedTemplate,
+                onSelected: onTemplateSelected,
+                isMobileLayout: isBottomSheet,
+              ),
             ),
           ),
         ],
