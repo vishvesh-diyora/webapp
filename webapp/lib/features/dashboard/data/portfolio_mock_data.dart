@@ -11,8 +11,7 @@ abstract final class PortfolioMockData {
     location: 'San Francisco, CA',
     avatarInitials: 'MC',
     avatarGradient: [Color(0xFF8B5CF6), Color(0xFF6366F1)],
-    avatarImageUrl:
-        'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=800&h=800&fit=crop&q=80',
+    avatarImageUrl: null,
     socialLinks: [
       PortfolioSocialLink(
         platform: 'Instagram',

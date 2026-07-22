@@ -1,63 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:webapp/core/constants/app_constants.dart';
+import 'package:webapp/core/domain/category_type.dart';
 import 'package:webapp/features/dashboard/data/category_templates_data.dart';
-import 'package:webapp/features/dashboard/models/category_template.dart';
+import 'package:webapp/features/website/domain/entities/website_document.dart';
 import 'package:webapp/features/dashboard/screens/category_detail_screen.dart';
 
-/// Home tab with banner carousel and category cards.
 class HomeConfiguratorTab extends StatelessWidget {
   const HomeConfiguratorTab({super.key});
 
-  /// Below this width: swipeable single-banner carousel (mobile).
-  /// At or above: all banners visible in one row (web/tablet).
   static const double _wideBannerBreakpoint = 600;
 
   static const _banners = [
     _BannerData(
-      title: 'Summer Collection',
-      subtitle: 'Fresh templates for your next launch',
+      title: 'Build in Minutes',
+      subtitle: 'Choose a category, pick a template, publish static sites',
       gradient: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
     ),
     _BannerData(
-      title: 'Pro Templates',
-      subtitle: 'Premium layouts crafted by designers',
+      title: '110 Templates',
+      subtitle: '22 unique production layouts for every category',
       gradient: [Color(0xFF0EA5E9), Color(0xFF6366F1)],
     ),
     _BannerData(
-      title: 'Launch Faster',
-      subtitle: 'Go from idea to live site in minutes',
+      title: 'Edit & Republish',
+      subtitle: 'Same JSON powers preview, editor, and generated websites',
       gradient: [Color(0xFF10B981), Color(0xFF0EA5E9)],
     ),
   ];
 
   static const _categories = [
     _CategoryData(
-      type: CategoryType.ecommerce,
-      title: 'E-commerce',
-      price: '\$49',
-      gradient: [Color(0xFFEC4899), Color(0xFFF472B6)],
-      icon: Icons.shopping_bag_outlined,
-    ),
-    _CategoryData(
       type: CategoryType.portfolio,
       title: 'Portfolio',
-      price: '\$29',
+      price: 'Free',
       gradient: [Color(0xFF6366F1), Color(0xFF818CF8)],
       icon: Icons.work_outline_rounded,
     ),
     _CategoryData(
-      type: CategoryType.gift,
-      title: 'Gift',
-      price: '\$39',
-      gradient: [Color(0xFF10B981), Color(0xFF34D399)],
+      type: CategoryType.businessProfile,
+      title: 'Business Profile',
+      price: 'Free',
+      gradient: [Color(0xFF0EA5E9), Color(0xFF38BDF8)],
+      icon: Icons.business_center_outlined,
+    ),
+    _CategoryData(
+      type: CategoryType.giftReveal,
+      title: 'Gift Reveal',
+      price: 'Free',
+      gradient: [Color(0xFFEC4899), Color(0xFFF472B6)],
       icon: Icons.card_giftcard_outlined,
     ),
     _CategoryData(
-      type: CategoryType.custom,
-      title: 'Custom',
-      price: '\$59',
+      type: CategoryType.restaurantMenu,
+      title: 'Restaurant Menu',
+      price: 'Free',
       gradient: [Color(0xFFF59E0B), Color(0xFFFBBF24)],
-      icon: Icons.dashboard_customize_outlined,
+      icon: Icons.restaurant_menu,
+    ),
+    _CategoryData(
+      type: CategoryType.ecommerce,
+      title: 'Ecommerce Catalogue',
+      price: 'Free',
+      gradient: [Color(0xFF10B981), Color(0xFF34D399)],
+      icon: Icons.shopping_bag_outlined,
     ),
   ];
 
@@ -70,7 +75,7 @@ class HomeConfiguratorTab extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 20, 20, 8),
               child: Text(
-                'Configurator',
+                'Create Website',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: const Color(0xFF0F172A),
@@ -85,14 +90,12 @@ class HomeConfiguratorTab extends StatelessWidget {
                 builder: (context, constraints) {
                   final screenWidth = MediaQuery.sizeOf(context).width;
                   final isWide = screenWidth >= _wideBannerBreakpoint;
-
                   if (isWide) {
                     return _WideBannerRow(
                       banners: _banners,
                       maxWidth: constraints.maxWidth,
                     );
                   }
-
                   return SizedBox(
                     height: _mobileBannerHeight(screenWidth),
                     child: PageView.builder(
@@ -114,7 +117,7 @@ class HomeConfiguratorTab extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
               child: Text(
-                'What would you like to create?',
+                'Choose a category',
                 style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                       color: const Color(0xFF0F172A),
@@ -122,132 +125,29 @@ class HomeConfiguratorTab extends StatelessWidget {
               ),
             ),
           ),
-          SliverToBoxAdapter(
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                final screenWidth = MediaQuery.sizeOf(context).width;
-                final isWide = screenWidth >= _wideBannerBreakpoint;
-
-                if (isWide) {
-                  return _WideCategoryRow(
-                    categories: _categories,
-                    maxWidth: constraints.maxWidth,
-                  );
-                }
-
-                return Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: 2,
-                      mainAxisSpacing: 12,
-                      crossAxisSpacing: 12,
-                      childAspectRatio: 0.92,
-                    ),
-                    itemCount: _categories.length,
-                    itemBuilder: (context, index) {
-                      return _CategoryGridTile(data: _categories[index]);
-                    },
-                  ),
-                );
-              },
+          SliverPadding(
+            padding: const EdgeInsets.fromLTRB(20, 0, 20, 24),
+            sliver: SliverGrid(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: MediaQuery.sizeOf(context).width >= 700 ? 3 : 2,
+                crossAxisSpacing: 12,
+                mainAxisSpacing: 12,
+                childAspectRatio: 0.92,
+              ),
+              delegate: SliverChildBuilderDelegate(
+                (context, index) => _CategoryGridTile(data: _categories[index]),
+                childCount: _categories.length,
+              ),
             ),
           ),
-          const SliverToBoxAdapter(child: SizedBox(height: 24)),
         ],
       ),
     );
   }
 
-  double _mobileBannerHeight(double screenWidth) {
-    final bannerWidth = screenWidth * 0.88 - 12;
-    return bannerWidth * (9 / 16);
-  }
-}
-
-/// All banners side-by-side for web and wide screens.
-class _WideBannerRow extends StatelessWidget {
-  const _WideBannerRow({
-    required this.banners,
-    required this.maxWidth,
-  });
-
-  final List<_BannerData> banners;
-  final double maxWidth;
-
-  static const double _horizontalPadding = 40;
-  static const double _gap = 12;
-
-  @override
-  Widget build(BuildContext context) {
-    final contentWidth = maxWidth.clamp(0.0, AppConstants.maxDashboardWidth);
-    final totalGaps = _gap * (banners.length - 1);
-    final bannerWidth =
-        (contentWidth - _horizontalPadding - totalGaps) / banners.length;
-    final bannerHeight = bannerWidth * (9 / 16);
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: SizedBox(
-        height: bannerHeight,
-        child: Row(
-          children: [
-            for (var i = 0; i < banners.length; i++) ...[
-              if (i > 0) const SizedBox(width: _gap),
-              Expanded(
-                child: _BannerCard(
-                  data: banners[i],
-                  compact: true,
-                ),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-/// All category cards in one row for web and wide screens.
-class _WideCategoryRow extends StatelessWidget {
-  const _WideCategoryRow({
-    required this.categories,
-    required this.maxWidth,
-  });
-
-  final List<_CategoryData> categories;
-  final double maxWidth;
-
-  static const double _horizontalPadding = 40;
-  static const double _gap = 12;
-
-  @override
-  Widget build(BuildContext context) {
-    final contentWidth = maxWidth.clamp(0.0, AppConstants.maxDashboardWidth);
-    final totalGaps = _gap * (categories.length - 1);
-    final cardWidth =
-        (contentWidth - _horizontalPadding - totalGaps) / categories.length;
-    final cardHeight = cardWidth / 1.05;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      child: SizedBox(
-        height: cardHeight,
-        child: Row(
-          children: [
-            for (var i = 0; i < categories.length; i++) ...[
-              if (i > 0) const SizedBox(width: _gap),
-              Expanded(
-                child: _CategoryGridTile(data: categories[i]),
-              ),
-            ],
-          ],
-        ),
-      ),
-    );
+  static double _mobileBannerHeight(double screenWidth) {
+    final clamped = screenWidth.clamp(320.0, AppConstants.maxDashboardWidth);
+    return (clamped * 0.42).clamp(150.0, 220.0);
   }
 }
 
@@ -264,73 +164,47 @@ class _BannerData {
 }
 
 class _BannerCard extends StatelessWidget {
-  const _BannerCard({required this.data, this.compact = false});
-
+  const _BannerCard({required this.data});
   final _BannerData data;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) {
-    return AspectRatio(
-      aspectRatio: 16 / 9,
-      child: Container(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: data.gradient,
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
-          borderRadius: BorderRadius.circular(20),
-          boxShadow: [
-            BoxShadow(
-              color: data.gradient.first.withValues(alpha: 0.35),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
+    return Container(
+      decoration: BoxDecoration(
+        gradient: LinearGradient(colors: data.gradient),
+        borderRadius: BorderRadius.circular(16),
+      ),
+      padding: const EdgeInsets.all(20),
+      alignment: Alignment.bottomLeft,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          Text(data.title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20)),
+          const SizedBox(height: 4),
+          Text(data.subtitle, style: const TextStyle(color: Colors.white70, fontSize: 13)),
+        ],
+      ),
+    );
+  }
+}
+
+class _WideBannerRow extends StatelessWidget {
+  const _WideBannerRow({required this.banners, required this.maxWidth});
+  final List<_BannerData> banners;
+  final double maxWidth;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        children: [
+          for (var i = 0; i < banners.length; i++) ...[
+            if (i > 0) const SizedBox(width: 12),
+            Expanded(child: SizedBox(height: 140, child: _BannerCard(data: banners[i]))),
           ],
-        ),
-        child: Stack(
-          children: [
-            Positioned(
-              right: -20,
-              bottom: -20,
-              child: Icon(
-                Icons.image_outlined,
-                size: compact ? 72 : 120,
-                color: Colors.white.withValues(alpha: 0.15),
-              ),
-            ),
-            Padding(
-              padding: EdgeInsets.all(compact ? 16 : 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  Text(
-                    data.title,
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: compact ? 16 : 22,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    data.subtitle,
-                    maxLines: compact ? 2 : 3,
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.85),
-                      fontSize: compact ? 12 : 14,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
+        ],
       ),
     );
   }
@@ -351,12 +225,11 @@ class _CategoryData {
   final List<Color> gradient;
   final IconData icon;
 
-  CategoryTemplate? get template => CategoryTemplatesData.byType(type);
+  WebsiteDocument get template => CategoryTemplatesData.defaultForCategory(type);
 }
 
 class _CategoryGridTile extends StatelessWidget {
   const _CategoryGridTile({required this.data});
-
   final _CategoryData data;
 
   @override
@@ -371,7 +244,7 @@ class _CategoryGridTile extends StatelessWidget {
             MaterialPageRoute<void>(
               builder: (_) => CategoryDetailScreen(
                 categoryType: data.type,
-                initialTemplate: data.template,
+                initialDocument: data.template,
               ),
             ),
           );
@@ -380,73 +253,25 @@ class _CategoryGridTile extends StatelessWidget {
           decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(16),
             border: Border.all(color: const Color(0xFFE2E8F0)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(alpha: 0.04),
-                blurRadius: 8,
-                offset: const Offset(0, 2),
-              ),
-            ],
           ),
           child: Padding(
             padding: const EdgeInsets.all(14),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        gradient: LinearGradient(
-                          colors: data.gradient,
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Icon(data.icon, color: Colors.white, size: 24),
-                    ),
-                    const Icon(
-                      Icons.chevron_right_rounded,
-                      color: Color(0xFF94A3B8),
-                      size: 22,
-                    ),
-                  ],
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(colors: data.gradient),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Icon(data.icon, color: Colors.white),
                 ),
                 const Spacer(),
-                Text(
-                  data.title,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 15,
-                    color: Color(0xFF0F172A),
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 8,
-                    vertical: 3,
-                  ),
-                  decoration: BoxDecoration(
-                    color: data.gradient.first.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: Text(
-                    data.price,
-                    style: TextStyle(
-                      color: data.gradient.first,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
-                  ),
-                ),
+                Text(data.title, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15)),
+                const SizedBox(height: 4),
+                Text(CategoryType.description(data.type), maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Color(0xFF64748B), fontSize: 11, height: 1.3)),
               ],
             ),
           ),

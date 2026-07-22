@@ -3,7 +3,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:webapp/app.dart';
 import 'package:webapp/core/config/app_config.dart';
 import 'package:webapp/core/services/auth_callback_handler.dart';
+import 'package:webapp/core/services/cloudflare_callback_handler.dart';
 import 'package:webapp/core/services/preferences_service.dart';
+import 'package:webapp/features/cloudflare/data/cloudflare_oauth_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,8 +20,13 @@ Future<void> main() async {
     ),
   );
 
-  // Web: parse #access_token / ?code from reset-password & OAuth redirects.
-  await AuthCallbackHandler.handleInitialCallback();
+  // Cloudflare OAuth callback (must run before Supabase when state=cf_oauth_*).
+  if (CloudflareCallbackHandler.hasCloudflareCallbackInUrl()) {
+    await CloudflareOAuthService().completeWebCallbackIfPresent();
+  } else {
+    // Web: parse #access_token / ?code from reset-password & OAuth redirects.
+    await AuthCallbackHandler.handleInitialCallback();
+  }
 
   runApp(const WebApp());
 }

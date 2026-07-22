@@ -1,16 +1,44 @@
 import 'package:flutter/material.dart';
-import 'package:webapp/features/dashboard/data/portfolio_mock_data.dart';
+import 'package:webapp/core/domain/category_type.dart';
 import 'package:webapp/features/dashboard/models/category_template.dart';
+import 'package:webapp/features/dashboard/models/portfolio_content.dart';
+import 'package:webapp/features/templates/preview/portfolio/portfolio_content_parser.dart';
 
 /// Shared helpers for all portfolio designs.
 abstract final class PortfolioDesignHelpers {
-  static const profile = PortfolioMockData.profile;
-  static const testimonials = PortfolioMockData.testimonials;
-  static const highlights = PortfolioMockData.highlights;
-  static const projects = PortfolioMockData.projects;
+  static PortfolioParsedContent? _content;
 
-  static List<CategoryContentBlock> sortedBlocks(CategoryTemplate template) {
-    final blocks = List<CategoryContentBlock>.from(template.data);
+  static void bind(WebsiteDocument document) {
+    _content = PortfolioContentParser.fromDocument(document);
+  }
+
+  static void clear() {
+    _content = null;
+  }
+
+  static PortfolioProfile get profile =>
+      _content?.profile ??
+      PortfolioProfile(
+        name: 'Your Name',
+        title: 'Your Title',
+        bio: '',
+        location: '',
+        avatarInitials: 'YN',
+        avatarGradient: const [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+        socialLinks: const [],
+      );
+
+  static List<PortfolioTestimonial> get testimonials =>
+      _content?.testimonials ?? const [];
+
+  static List<PortfolioHighlight> get highlights =>
+      _content?.highlights ?? const [];
+
+  static List<PortfolioProject> get projects =>
+      _content?.projects ?? const [];
+
+  static List<WebsiteContentBlock> sortedBlocks(CategoryTemplate template) {
+    final blocks = List<WebsiteContentBlock>.from(template.data);
     blocks.sort((a, b) => a.seqId.compareTo(b.seqId));
     return blocks;
   }

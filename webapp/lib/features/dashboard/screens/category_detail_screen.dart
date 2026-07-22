@@ -1,11 +1,15 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webapp/features/dashboard/data/category_templates_data.dart';
-import 'package:webapp/features/dashboard/models/category_template.dart';
 import 'package:webapp/features/dashboard/widgets/category_template_preview_content.dart';
 import 'package:webapp/features/dashboard/widgets/portfolio/portfolio_screen_background.dart';
 import 'package:webapp/features/dashboard/widgets/preview_device_frame.dart';
 import 'package:webapp/features/dashboard/widgets/template_selection_panel.dart';
+import 'package:webapp/features/website/domain/entities/website_document.dart';
+import 'package:webapp/features/website/domain/repositories/website_repository.dart';
+import 'package:webapp/features/website/presentation/bloc/website_editor_bloc.dart';
+import 'package:webapp/features/website/presentation/screens/website_editor_screen.dart';
 
 enum _PreviewMode { mobile, tablet, web }
 
@@ -17,11 +21,11 @@ class CategoryDetailScreen extends StatefulWidget {
   const CategoryDetailScreen({
     super.key,
     required this.categoryType,
-    this.initialTemplate,
+    this.initialDocument,
   });
 
   final int categoryType;
-  final CategoryTemplate? initialTemplate;
+  final WebsiteDocument? initialDocument;
 
   @override
   State<CategoryDetailScreen> createState() => _CategoryDetailScreenState();
@@ -33,14 +37,14 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
 
   _PreviewMode? _selectedMode;
   bool _isDetailPanelExpanded = true;
-  late CategoryTemplate _selectedTemplate;
-  late List<CategoryTemplate> _templates;
+  late WebsiteDocument _selectedDocument;
+  late List<WebsiteDocument> _templates;
 
   @override
   void initState() {
     super.initState();
     _templates = CategoryTemplatesData.byCategoryType(widget.categoryType);
-    _selectedTemplate = widget.initialTemplate ??
+    _selectedDocument = widget.initialDocument ??
         _templates.firstOrNull ??
         CategoryTemplatesData.byType(widget.categoryType)!;
   }
@@ -55,15 +59,15 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   Widget _buildPreview(_PreviewMode mode, BoxConstraints constraints) {
     final content = CategoryTemplatePreviewContent(
       key: ValueKey(
-        '${_selectedTemplate.type}_${_selectedTemplate.templateType}_$mode',
+        '${_selectedDocument.type}_${_selectedDocument.templateType}_$mode',
       ),
-      template: _selectedTemplate,
+      document: _selectedDocument,
       compact: mode == _PreviewMode.mobile,
       mobileProfileLayout: mode == _PreviewMode.mobile,
     );
 
     final screenBg = PreviewScreenBackground.forTemplate(
-      _selectedTemplate,
+      _selectedDocument,
       mobileProfileLayout: mode == _PreviewMode.mobile,
     );
 
@@ -86,7 +90,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     };
 
     return _FittedDevicePreview(
-      key: ValueKey('${mode.name}_${_selectedTemplate.templateType}'),
+      key: ValueKey('${mode.name}_${_selectedDocument.templateType}'),
       maxWidth: constraints.maxWidth,
       maxHeight: constraints.maxHeight,
       fitWidth: fitWidth,
@@ -107,11 +111,24 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_selectedTemplate.name),
-        actions: const [
+        title: Text(_selectedDocument.name),
+        actions: [
           Padding(
-            padding: EdgeInsets.only(right: 12),
-            child: _GradientNextButton(),
+            padding: const EdgeInsets.only(right: 12),
+            child: _GradientNextButton(
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (_) => BlocProvider(
+                      create: (_) => WebsiteEditorBloc(
+                        repository: context.read<WebsiteRepository>(),
+                      )..add(WebsiteEditorStarted(_selectedDocument)),
+                      child: const WebsiteEditorScreen(),
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ],
       ),
@@ -142,9 +159,9 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
 
             final detailPanel = _CategoryDetailPanel(
               templates: _templates,
-              selectedTemplate: _selectedTemplate,
-              onTemplateSelected: (template) {
-                setState(() => _selectedTemplate = template);
+              selectedDocument: _selectedDocument,
+              onTemplateSelected: (document) {
+                setState(() => _selectedDocument = document);
               },
               isBottomSheet: isPortraitLayout,
               isExpanded: _isDetailPanelExpanded,
@@ -252,16 +269,16 @@ class _DevicePreviewSection extends StatelessWidget {
 class _CategoryDetailPanel extends StatelessWidget {
   const _CategoryDetailPanel({
     required this.templates,
-    required this.selectedTemplate,
+    required this.selectedDocument,
     required this.onTemplateSelected,
     required this.isBottomSheet,
     required this.isExpanded,
     this.onToggle,
   });
 
-  final List<CategoryTemplate> templates;
-  final CategoryTemplate selectedTemplate;
-  final ValueChanged<CategoryTemplate> onTemplateSelected;
+  final List<WebsiteDocument> templates;
+  final WebsiteDocument selectedDocument;
+  final ValueChanged<WebsiteDocument> onTemplateSelected;
   final bool isBottomSheet;
   final bool isExpanded;
   final VoidCallback? onToggle;
@@ -303,7 +320,7 @@ class _CategoryDetailPanel extends StatelessWidget {
               ignoring: isBottomSheet && !isExpanded,
               child: TemplateSelectionPanel(
                 templates: templates,
-                selected: selectedTemplate,
+                selected: selectedDocument,
                 onSelected: onTemplateSelected,
                 isMobileLayout: isBottomSheet,
               ),
@@ -352,14 +369,16 @@ class _BottomSheetToggle extends StatelessWidget {
 }
 
 class _GradientNextButton extends StatelessWidget {
-  const _GradientNextButton();
+  const _GradientNextButton({required this.onTap});
+
+  final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: () {},
+        onTap: onTap,
         borderRadius: BorderRadius.circular(20),
         child: Ink(
           decoration: BoxDecoration(

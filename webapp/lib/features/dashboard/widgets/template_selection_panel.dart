@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:webapp/core/domain/category_type.dart';
 import 'package:webapp/features/dashboard/data/category_templates_data.dart';
 import 'package:webapp/features/dashboard/models/category_template.dart';
-import 'package:webapp/features/dashboard/widgets/portfolio/portfolio_renderer.dart';
+import 'package:webapp/features/templates/preview/website_preview_renderer.dart';
 
-/// Template picker shown in the detail bottom sheet / side panel.
 class TemplateSelectionPanel extends StatelessWidget {
   const TemplateSelectionPanel({
     super.key,
@@ -13,24 +13,20 @@ class TemplateSelectionPanel extends StatelessWidget {
     required this.isMobileLayout,
   });
 
-  final List<CategoryTemplate> templates;
-  final CategoryTemplate selected;
-  final ValueChanged<CategoryTemplate> onSelected;
+  final List<WebsiteDocument> templates;
+  final WebsiteDocument selected;
+  final ValueChanged<WebsiteDocument> onSelected;
   final bool isMobileLayout;
 
   @override
   Widget build(BuildContext context) {
-    if (templates.length <= 1) {
-      return _SingleTemplateInfo(template: selected);
-    }
-
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
           child: Text(
-            'Choose Template',
+            'Choose Template (${templates.length})',
             style: TextStyle(
               fontWeight: FontWeight.w700,
               fontSize: isMobileLayout ? 14 : 15,
@@ -63,9 +59,9 @@ class _MobileTemplateStrip extends StatelessWidget {
     required this.onSelected,
   });
 
-  final List<CategoryTemplate> templates;
-  final CategoryTemplate selected;
-  final ValueChanged<CategoryTemplate> onSelected;
+  final List<WebsiteDocument> templates;
+  final WebsiteDocument selected;
+  final ValueChanged<WebsiteDocument> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +69,7 @@ class _MobileTemplateStrip extends StatelessWidget {
       scrollDirection: Axis.horizontal,
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
       itemCount: templates.length,
-      separatorBuilder: (_, _) => const SizedBox(width: 10),
+      separatorBuilder: (_, __) => const SizedBox(width: 10),
       itemBuilder: (context, index) {
         final template = templates[index];
         return _TemplateCard(
@@ -95,9 +91,9 @@ class _WebTemplateGrid extends StatelessWidget {
     required this.onSelected,
   });
 
-  final List<CategoryTemplate> templates;
-  final CategoryTemplate selected;
-  final ValueChanged<CategoryTemplate> onSelected;
+  final List<WebsiteDocument> templates;
+  final WebsiteDocument selected;
+  final ValueChanged<WebsiteDocument> onSelected;
 
   @override
   Widget build(BuildContext context) {
@@ -132,7 +128,7 @@ class _TemplateCard extends StatelessWidget {
     this.showMiniPreview = false,
   });
 
-  final CategoryTemplate template;
+  final WebsiteDocument template;
   final bool isSelected;
   final VoidCallback onTap;
   final double? width;
@@ -172,15 +168,13 @@ class _TemplateCard extends StatelessWidget {
               children: [
                 Expanded(
                   child: ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(11),
-                    ),
-                    child: showMiniPreview &&
-                            template.type == CategoryType.portfolio
+                    borderRadius: const BorderRadius.vertical(top: Radius.circular(11)),
+                    child: showMiniPreview
                         ? IgnorePointer(
-                            child: PortfolioTemplateRenderer(
-                              template: template,
+                            child: WebsitePreviewRenderer(
+                              document: template,
                               compact: true,
+                              mobileProfileLayout: template.type == CategoryType.portfolio,
                             ),
                           )
                         : DecoratedBox(
@@ -220,10 +214,7 @@ class _TemplateCard extends StatelessWidget {
                         template.subname,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 9,
-                          color: Color(0xFF64748B),
-                        ),
+                        style: const TextStyle(fontSize: 9, color: Color(0xFF64748B)),
                       ),
                     ],
                   ),
@@ -233,46 +224,6 @@ class _TemplateCard extends StatelessWidget {
           ),
         ),
       ),
-    );
-  }
-}
-
-class _SingleTemplateInfo extends StatelessWidget {
-  const _SingleTemplateInfo({required this.template});
-
-  final CategoryTemplate template;
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView(
-      padding: const EdgeInsets.all(16),
-      children: [
-        Text(
-          template.name,
-          style: const TextStyle(
-            fontWeight: FontWeight.w700,
-            fontSize: 16,
-            color: Color(0xFF0F172A),
-          ),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          template.subname,
-          style: const TextStyle(
-            fontSize: 13,
-            color: Color(0xFF64748B),
-          ),
-        ),
-        const SizedBox(height: 10),
-        Text(
-          template.description,
-          style: const TextStyle(
-            fontSize: 12,
-            color: Color(0xFF64748B),
-            height: 1.4,
-          ),
-        ),
-      ],
     );
   }
 }

@@ -38,6 +38,18 @@ class AppConfig {
   /// Deep link for mobile password-reset and OAuth callbacks.
   static const String mobileRedirectUrl = 'io.supabase.webapp://login-callback';
 
+  // ── Cloudflare Pages OAuth ────────────────────────────────────────────────
+  // Dashboard → Manage Account → OAuth clients → Create (Authorization Code + PKCE).
+  // Scopes: Account Read + Cloudflare Pages Edit.
+  // Register redirect URI (same as Supabase callback):
+  //   Web:  your production URL or http://localhost:<port>
+  //   Mobile: io.supabase.webapp://login-callback
+  //
+  // Build with:
+  //   flutter run --dart-define=CLOUDFLARE_OAUTH_CLIENT_ID=your_client_id
+  // Optional scopes override:
+  //   --dart-define=CLOUDFLARE_OAUTH_SCOPES="account:read cloudflare-pages:edit"
+
   // ── App ───────────────────────────────────────────────────────────────────
 
   static const String appName = 'WebApp Configurator';

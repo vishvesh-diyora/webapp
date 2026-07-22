@@ -236,7 +236,7 @@ Widget buildAnimatedPortfolio({
   required Widget Function(bool compact) testimonials,
   required Widget Function(bool compact) projects,
 }) {
-  final blocks = List<CategoryContentBlock>.from(template.data)
+  final blocks = List<WebsiteContentBlock>.from(template.data)
     ..sort((a, b) => a.seqId.compareTo(b.seqId));
   var idx = 0;
   return Container(

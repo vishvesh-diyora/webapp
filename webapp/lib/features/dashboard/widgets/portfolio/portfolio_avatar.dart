@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:webapp/core/services/image_asset_service.dart';
 import 'package:webapp/features/dashboard/models/portfolio_content.dart';
 
 enum ProfileImageShape { circle, square, banner }
@@ -53,13 +54,12 @@ class PortfolioProfileImage extends StatelessWidget {
     return image;
   }
 
-  Widget _circlePhoto(String url) {
+  Widget _circlePhoto(String path) {
     return Container(
       width: size,
       height: size,
       decoration: BoxDecoration(
         shape: BoxShape.circle,
-        image: DecorationImage(image: NetworkImage(url), fit: fit, alignment: alignment),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withValues(alpha: 0.2),
@@ -68,31 +68,33 @@ class PortfolioProfileImage extends StatelessWidget {
           ),
         ],
       ),
+      clipBehavior: Clip.antiAlias,
+      child: ImageAssetService.buildImage(
+        path: path,
+        width: size,
+        height: size,
+        fit: fit,
+        borderRadius: BorderRadius.circular(size / 2),
+      ),
     );
   }
 
-  Widget _squarePhoto(String url) {
-    return SizedBox(
+  Widget _squarePhoto(String path) {
+    return ImageAssetService.buildImage(
+      path: path,
       width: size,
       height: size,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(borderRadius),
-          image: DecorationImage(image: NetworkImage(url), fit: fit, alignment: alignment),
-        ),
-      ),
+      fit: fit,
+      borderRadius: BorderRadius.circular(borderRadius),
     );
   }
 
-  Widget _bannerPhoto(String url) {
-    return SizedBox(
+  Widget _bannerPhoto(String path) {
+    return ImageAssetService.buildImage(
+      path: path,
       width: double.infinity,
       height: bannerHeight,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          image: DecorationImage(image: NetworkImage(url), fit: fit, alignment: alignment),
-        ),
-      ),
+      fit: fit,
     );
   }
 }
