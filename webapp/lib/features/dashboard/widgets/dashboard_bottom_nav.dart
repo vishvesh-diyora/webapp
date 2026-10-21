@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:webapp/core/constants/app_constants.dart';
+import 'package:webapp/features/dashboard/dashboard_content_insets.dart';
 
 class DashboardBottomNav extends StatelessWidget {
   const DashboardBottomNav({
@@ -39,10 +39,10 @@ class DashboardBottomNav extends StatelessWidget {
     final count = itemCount.clamp(1, _items.length);
     final alignmentX = count <= 1 ? 0.0 : -1.0 + (2.0 * currentIndex / (count - 1));
 
-    final gutter = AppConstants.dashboardHorizontalGutter;
+    final horizontal = DashboardContentInsets.pageHorizontal(context);
 
     return Padding(
-      padding: EdgeInsets.fromLTRB(gutter, 6, gutter, 8),
+      padding: EdgeInsets.fromLTRB(horizontal.left, 6, horizontal.right, 8),
       child: SizedBox(
         width: double.infinity,
         child: DecoratedBox(

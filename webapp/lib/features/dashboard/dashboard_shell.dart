@@ -76,6 +76,8 @@ class _DashboardShellState extends State<DashboardShell> {
             color: Colors.transparent,
             child: SafeArea(
               top: false,
+              left: false,
+              right: false,
               child: DashboardBottomNav(
                 currentIndex: _currentIndex,
                 itemCount: _tabCount,
