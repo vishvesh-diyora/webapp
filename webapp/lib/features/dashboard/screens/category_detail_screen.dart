@@ -1,4 +1,3 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webapp/core/domain/category_type.dart';
@@ -10,6 +9,7 @@ import 'package:webapp/features/dashboard/widgets/template_selection_panel.dart'
 import 'package:webapp/features/website/domain/entities/website_document.dart';
 import 'package:webapp/features/website/domain/repositories/website_repository.dart';
 import 'package:webapp/features/website/presentation/bloc/website_editor_bloc.dart';
+import 'package:webapp/features/dashboard/screens/template_fullscreen_preview_screen.dart';
 import 'package:webapp/features/website/presentation/screens/website_editor_screen.dart';
 
 enum _PreviewMode { mobile, tablet, web }
@@ -70,6 +70,24 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     if (width < _tabletBreakpoint) return _PreviewMode.mobile;
     if (width < _desktopBreakpoint) return _PreviewMode.tablet;
     return _PreviewMode.web;
+  }
+
+  void _openFullscreenPreview(BuildContext context, _PreviewMode mode) {
+    final (compact, mobileProfileLayout) = switch (mode) {
+      _PreviewMode.mobile => (true, true),
+      _PreviewMode.tablet => (false, false),
+      _PreviewMode.web => (false, false),
+    };
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        fullscreenDialog: true,
+        builder: (_) => TemplateFullscreenPreviewScreen(
+          document: _selectedDocument,
+          compact: compact,
+          mobileProfileLayout: mobileProfileLayout,
+        ),
+      ),
+    );
   }
 
   Widget _buildPreview(_PreviewMode mode, BoxConstraints constraints) {
@@ -158,6 +176,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
             final previewSection = _DevicePreviewSection(
               selectedMode: selectedMode,
               onModeChanged: (mode) => setState(() => _selectedMode = mode),
+              onFullscreenTap: () => _openFullscreenPreview(context, selectedMode),
               previewBuilder: (previewConstraints) => _ExclusivePreviewPane(
                 key: ValueKey(
                   '${selectedMode.name}_$_selectedTemplateType',
@@ -219,11 +238,13 @@ class _DevicePreviewSection extends StatelessWidget {
   const _DevicePreviewSection({
     required this.selectedMode,
     required this.onModeChanged,
+    required this.onFullscreenTap,
     required this.previewBuilder,
   });
 
   final _PreviewMode selectedMode;
   final ValueChanged<_PreviewMode> onModeChanged;
+  final VoidCallback onFullscreenTap;
   final Widget Function(BoxConstraints constraints) previewBuilder;
 
   @override
@@ -241,30 +262,12 @@ class _DevicePreviewSection extends StatelessWidget {
           ),
         ),
         Padding(
-          padding: const EdgeInsets.fromLTRB(12, 4, 12, 8),
+          padding: const EdgeInsets.fromLTRB(12, 6, 12, 10),
           child: Center(
-            child: SizedBox(
-              width: 220,
-              child: CupertinoSlidingSegmentedControl<_PreviewMode>(
-                groupValue: selectedMode,
-                thumbColor: Colors.white,
-                backgroundColor: const Color(0xFFE2E8F0),
-                children: const {
-                  _PreviewMode.mobile: _SegmentIcon(
-                    icon: Icons.phone_iphone_outlined,
-                  ),
-                  _PreviewMode.tablet: _SegmentIcon(
-                    icon: Icons.tablet_mac_outlined,
-                  ),
-                  _PreviewMode.web: _SegmentIcon(
-                    icon: Icons.desktop_mac_outlined,
-                  ),
-                },
-                onValueChanged: (value) {
-                  if (value == null) return;
-                  onModeChanged(value);
-                },
-              ),
+            child: _PreviewViewportToolbar(
+              selectedMode: selectedMode,
+              onModeChanged: onModeChanged,
+              onFullscreenTap: onFullscreenTap,
             ),
           ),
         ),
@@ -431,19 +434,182 @@ class _GradientNextButton extends StatelessWidget {
   }
 }
 
-class _SegmentIcon extends StatelessWidget {
-  const _SegmentIcon({required this.icon});
+class _PreviewViewportToolbar extends StatelessWidget {
+  const _PreviewViewportToolbar({
+    required this.selectedMode,
+    required this.onModeChanged,
+    required this.onFullscreenTap,
+  });
 
-  final IconData icon;
+  static const _outerRadius = 28.0;
+  static const _innerRadius = 22.0;
+  static const _barHeight = 46.0;
+
+  final _PreviewMode selectedMode;
+  final ValueChanged<_PreviewMode> onModeChanged;
+  final VoidCallback onFullscreenTap;
+
+  static const _modes = [
+    _PreviewMode.mobile,
+    _PreviewMode.tablet,
+    _PreviewMode.web,
+  ];
+
+  static IconData _iconFor(_PreviewMode mode) => switch (mode) {
+        _PreviewMode.mobile => Icons.phone_iphone_rounded,
+        _PreviewMode.tablet => Icons.tablet_mac_rounded,
+        _PreviewMode.web => Icons.desktop_windows_rounded,
+      };
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      child: Icon(
-        icon,
-        size: 20,
-        color: const Color(0xFF334155),
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(_outerRadius),
+        color: Colors.white,
+        border: Border.all(color: const Color(0xFFE8ECF4)),
+        boxShadow: [
+          BoxShadow(
+            color: const Color(0xFF6366F1).withValues(alpha: 0.14),
+            blurRadius: 28,
+            offset: const Offset(0, 10),
+          ),
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.06),
+            blurRadius: 14,
+            offset: const Offset(0, 3),
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(5),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              height: _barHeight,
+              width: 228,
+              padding: const EdgeInsets.all(4),
+              decoration: BoxDecoration(
+                color: const Color(0xFFF1F5F9),
+                borderRadius: BorderRadius.circular(_innerRadius),
+              ),
+              child: Row(
+                children: [
+                  for (final mode in _modes) ...[
+                    Expanded(
+                      child: _PreviewModeChip(
+                        icon: _iconFor(mode),
+                        selected: mode == selectedMode,
+                        onTap: () => onModeChanged(mode),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 6),
+            _FullscreenPreviewButton(onTap: onFullscreenTap),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _PreviewModeChip extends StatelessWidget {
+  const _PreviewModeChip({
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 220),
+          curve: Curves.easeOutCubic,
+          height: double.infinity,
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(18),
+            gradient: selected
+                ? const LinearGradient(
+                    colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  )
+                : null,
+            boxShadow: selected
+                ? [
+                    BoxShadow(
+                      color: const Color(0xFF6366F1).withValues(alpha: 0.35),
+                      blurRadius: 10,
+                      offset: const Offset(0, 3),
+                    ),
+                  ]
+                : null,
+          ),
+          child: Icon(
+            icon,
+            size: 21,
+            color: selected ? Colors.white : const Color(0xFF64748B),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FullscreenPreviewButton extends StatelessWidget {
+  const _FullscreenPreviewButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Tooltip(
+      message: 'Full screen preview',
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: onTap,
+          borderRadius: BorderRadius.circular(22),
+          child: Ink(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(22),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [
+                  const Color(0xFF6366F1).withValues(alpha: 0.14),
+                  const Color(0xFF8B5CF6).withValues(alpha: 0.22),
+                ],
+              ),
+              border: Border.all(
+                color: const Color(0xFF6366F1).withValues(alpha: 0.22),
+              ),
+            ),
+            child: SizedBox(
+              width: 48,
+              height: _PreviewViewportToolbar._barHeight,
+              child: const Icon(
+                Icons.open_in_full_rounded,
+                size: 21,
+                color: Color(0xFF4F46E5),
+              ),
+            ),
+          ),
+        ),
       ),
     );
   }

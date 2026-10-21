@@ -135,6 +135,10 @@ class ContentEditorPanel extends StatelessWidget {
       _textField(context, label: 'Email', value: p['email'] as String? ?? '', onChanged: (v) {
         context.read<WebsiteEditorBloc>().add(WebsiteEditorFieldChanged(contentType: 1, field: 'email', value: v));
       }),
+      _listEditor(context, doc, contentType: 1, listKey: 'socialLinks', title: 'Social links', fields: const [
+        _FieldDef('platform', 'Platform'),
+        _FieldDef('url', 'URL'),
+      ], emptyItem: const {'platform': 'Instagram', 'url': 'https://', 'icon': 'instagram'}),
       _textField(context, label: 'Map embed URL', value: p['mapEmbed'] as String? ?? '', onChanged: (v) {
         context.read<WebsiteEditorBloc>().add(WebsiteEditorFieldChanged(contentType: 1, field: 'mapEmbed', value: v));
       }),
@@ -244,8 +248,16 @@ class ContentEditorPanel extends StatelessWidget {
         _FieldDef('name', 'Name'),
         _FieldDef('category', 'Category'),
         _FieldDef('price', 'Price'),
+        _FieldDef('discount', 'Discount %'),
         _FieldDef('description', 'Description'),
-      ], emptyItem: const {'name': '', 'category': '', 'price': 0, 'description': '', 'image': 'assets/images/menu-1.jpg'}, imageField: 'image'),
+      ], emptyItem: const {
+        'name': '',
+        'category': '',
+        'price': 0,
+        'discount': 0,
+        'description': '',
+        'image': 'assets/images/menu-1.jpg',
+      }, imageField: 'image'),
       _themeEditor(context, doc),
     ];
   }

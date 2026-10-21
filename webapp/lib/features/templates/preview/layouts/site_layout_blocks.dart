@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webapp/features/templates/preview/layout_theme.dart';
+import 'package:webapp/features/templates/preview/shared/catalog_search_icon.dart';
 import 'package:webapp/features/templates/preview/shared/site_image.dart';
 
 /// Site navigation — 22 distinct styles driven by [LayoutTheme.navStyle].
@@ -11,6 +12,9 @@ class SiteNavBar extends StatelessWidget {
     required this.compact,
     required this.mobileLayout,
     this.logo,
+    this.subtitle,
+    this.onSearchTap,
+    this.onBackTap,
   });
 
   final LayoutTheme theme;
@@ -18,6 +22,61 @@ class SiteNavBar extends StatelessWidget {
   final bool compact;
   final bool mobileLayout;
   final String? logo;
+  final String? subtitle;
+  final VoidCallback? onSearchTap;
+  final VoidCallback? onBackTap;
+
+  List<Widget> _leadingWidgets() {
+    if (onBackTap != null) {
+      return [
+        IconButton(
+          onPressed: onBackTap,
+          icon: Icon(Icons.arrow_back_ios_new_rounded, size: compact ? 18 : 20, color: theme.text),
+          tooltip: 'Back',
+        ),
+      ];
+    }
+    if (logo != null) {
+      return [
+        SiteImage(path: logo, width: compact ? 28 : 32, height: compact ? 28 : 32, borderRadius: 6),
+        SizedBox(width: compact ? 8 : 10),
+      ];
+    }
+    return const [];
+  }
+
+  Widget? _searchAction() {
+    if (onSearchTap == null) return null;
+    return CatalogSearchIcon.navButton(
+      theme: theme,
+      compact: compact,
+      onPressed: onSearchTap!,
+    );
+  }
+
+  Widget _navBrand(
+    TextStyle titleStyle, {
+    CrossAxisAlignment cross = CrossAxisAlignment.start,
+    TextAlign textAlign = TextAlign.start,
+  }) {
+    if (subtitle == null || subtitle!.isEmpty) {
+      return Text(title, textAlign: textAlign, style: titleStyle);
+    }
+    return Column(
+      crossAxisAlignment: cross,
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Text(title, textAlign: textAlign, style: titleStyle),
+        Text(
+          subtitle!,
+          maxLines: 2,
+          overflow: TextOverflow.ellipsis,
+          textAlign: textAlign,
+          style: theme.body(compact, size: 11).copyWith(color: theme.primary),
+        ),
+      ],
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -48,11 +107,9 @@ class SiteNavBar extends StatelessWidget {
       color: theme.surface,
       child: Row(
         children: [
-          if (logo != null) ...[
-            SiteImage(path: logo, width: compact ? 28 : 32, height: compact ? 28 : 32, borderRadius: 6),
-            SizedBox(width: compact ? 8 : 10),
-          ],
-          Expanded(child: Text(title, style: theme.heading(compact, size: 16))),
+          ..._leadingWidgets(),
+          Expanded(child: _navBrand(theme.heading(compact, size: 16))),
+          if (_searchAction() != null) _searchAction()!,
         ],
       ),
     );
@@ -89,7 +146,11 @@ class SiteNavBar extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 16, vertical: compact ? 8 : 10),
           decoration: BoxDecoration(color: theme.primary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(999)),
-          child: Text(title, style: theme.body(compact, size: 12).copyWith(color: theme.primary, fontWeight: FontWeight.w700)),
+          child: _navBrand(
+            theme.body(compact, size: 12).copyWith(color: theme.primary, fontWeight: FontWeight.w700),
+            cross: CrossAxisAlignment.center,
+            textAlign: TextAlign.center,
+          ),
         ),
       ),
     );
@@ -101,7 +162,7 @@ class SiteNavBar extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(title, style: theme.heading(compact, size: 18)),
+          _navBrand(theme.heading(compact, size: 18)),
           Container(
             height: 2,
             width: 48,
@@ -118,7 +179,7 @@ class SiteNavBar extends StatelessWidget {
       width: double.infinity,
       color: theme.secondary,
       padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 16, vertical: compact ? 10 : 12),
-      child: Text(title.toUpperCase(), style: theme.heading(compact, size: 14).copyWith(color: theme.accent, letterSpacing: 2)),
+      child: _navBrand(theme.heading(compact, size: 14).copyWith(color: theme.accent, letterSpacing: 2)),
     );
   }
 
@@ -140,7 +201,13 @@ class SiteNavBar extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(horizontal: compact ? 16 : 24, vertical: compact ? 14 : 18),
       decoration: BoxDecoration(border: Border(bottom: BorderSide(color: theme.primary.withValues(alpha: 0.25)))),
-      child: Center(child: Text(title, style: theme.heading(compact, size: 20).copyWith(letterSpacing: 4, fontWeight: FontWeight.w300))),
+      child: Center(
+        child: _navBrand(
+          theme.heading(compact, size: 20).copyWith(letterSpacing: 4, fontWeight: FontWeight.w300),
+          cross: CrossAxisAlignment.center,
+          textAlign: TextAlign.center,
+        ),
+      ),
     );
   }
 
@@ -161,7 +228,7 @@ class SiteNavBar extends StatelessWidget {
   Widget _minimal() {
     return Padding(
       padding: EdgeInsets.all(compact ? 12 : 16),
-      child: Align(alignment: Alignment.centerLeft, child: Text(title, style: theme.heading(compact, size: 14))),
+      child: Align(alignment: Alignment.centerLeft, child: _navBrand(theme.heading(compact, size: 14))),
     );
   }
 
@@ -170,7 +237,7 @@ class SiteNavBar extends StatelessWidget {
       color: theme.surface,
       padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 16, vertical: compact ? 10 : 12),
       alignment: Alignment.centerLeft,
-      child: Text(title, style: theme.heading(compact, size: 16)),
+      child: _navBrand(theme.heading(compact, size: 16)),
     );
   }
 
@@ -182,14 +249,23 @@ class SiteNavBar extends StatelessWidget {
         padding: EdgeInsets.symmetric(vertical: compact ? 8 : 10, horizontal: compact ? 12 : 14),
         decoration: BoxDecoration(color: theme.surface, borderRadius: BorderRadius.circular(theme.radius)),
         alignment: Alignment.centerLeft,
-        child: Text(title, style: theme.heading(compact, size: 14)),
+        child: _navBrand(theme.heading(compact, size: 14)),
       ),
     );
   }
 
   Widget _drawerHint() => Padding(
         padding: EdgeInsets.all(compact ? 12 : 16),
-        child: Row(children: [Icon(Icons.menu, color: theme.primary, size: compact ? 22 : 24), SizedBox(width: compact ? 8 : 10), Text(title, style: theme.heading(compact, size: 16))]),
+        child: Row(
+          children: [
+            if (onBackTap != null) ..._leadingWidgets() else ...[
+              Icon(Icons.menu, color: theme.primary, size: compact ? 22 : 24),
+              SizedBox(width: compact ? 8 : 10),
+            ],
+            Expanded(child: _navBrand(theme.heading(compact, size: 16))),
+            if (_searchAction() != null) _searchAction()!,
+          ],
+        ),
       );
 
   Widget _iconRow() {
@@ -198,7 +274,8 @@ class SiteNavBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Expanded(child: Text(title, style: theme.heading(compact, size: 14))),
+          Expanded(child: _navBrand(theme.heading(compact, size: 14))),
+          if (_searchAction() != null) _searchAction()!,
         ],
       ),
     );
@@ -211,7 +288,8 @@ class SiteNavBar extends StatelessWidget {
       color: theme.primary.withValues(alpha: 0.08),
       child: Row(
         children: [
-          Expanded(child: Text(title, style: theme.heading(compact, size: 22))),
+          Expanded(child: _navBrand(theme.heading(compact, size: 22))),
+          if (_searchAction() != null) _searchAction()!,
         ],
       ),
     );
@@ -223,7 +301,7 @@ class SiteNavBar extends StatelessWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(colors: [theme.secondary.withValues(alpha: 0.85), Colors.transparent]),
       ),
-      child: Text(title, style: theme.heading(compact, size: 18).copyWith(color: Colors.white)),
+      child: _navBrand(theme.heading(compact, size: 18).copyWith(color: Colors.white)),
     );
   }
 }

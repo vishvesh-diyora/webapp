@@ -147,10 +147,33 @@ body {
 .hero.split { background: var(--background); color: var(--text); }
 .hero img { max-width: 72px; border-radius: 12px; margin-bottom: 12px; }
 .grid { display: grid; gap: 16px; padding: 20px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+.grid-products { gap: 12px; padding: 16px; grid-template-columns: repeat(auto-fill, minmax(min(100%, 148px), 1fr)); }
 .card { background: #fff; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; overflow: hidden; }
+.grid-products .card { border-radius: 8px; padding: 10px; }
+.card-img-wrap { position: relative; width: 100%; aspect-ratio: 1 / 1.2; border-radius: 10px; overflow: hidden; margin-bottom: 8px; }
+.card-img-wrap img { width: 100%; height: 100%; object-fit: cover; border-radius: 0; margin-bottom: 0; display: block; }
+.badge-bestseller {
+  position: absolute; top: 8px; left: 8px; z-index: 1;
+  padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; color: #fff; letter-spacing: 0.02em;
+  background: linear-gradient(135deg, var(--primary), var(--accent));
+  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+}
+.price-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px; margin-top: 4px; }
+.price-sale { color: var(--primary); font-weight: 700; }
+.price-compare { color: rgba(15, 23, 42, 0.45); text-decoration: line-through; font-size: 0.9em; }
 .card img { width: 100%; height: 140px; object-fit: cover; border-radius: 8px; margin-bottom: 10px; }
 .section { padding: 20px; }
 .footer { padding: 20px; background: var(--secondary); color: #fff; }
+.footer-store { background: #f8fafc; color: var(--text); border-top: 1px solid #e2e8f0; }
+.footer-store .footer-line { margin: 0 0 10px; font-size: 14px; line-height: 1.5; }
+.footer-store .footer-line a { color: var(--primary); text-decoration: none; }
+.footer-social { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px; }
+.footer-social a {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 40px; height: 40px; border-radius: 50%;
+  background: color-mix(in srgb, var(--primary) 12%, transparent);
+  color: var(--primary); font-size: 12px; font-weight: 600; text-decoration: none;
+}
 .cart-bar { position: fixed; bottom: 0; left: 0; right: 0; background: #111827; color: #fff; padding: 12px 16px; display: flex; justify-content: space-between; align-items: center; z-index: 20; }
 button, .btn { border: 0; border-radius: 999px; padding: 10px 16px; cursor: pointer; background: var(--primary); color: #fff; text-decoration: none; display: inline-block; }
 .countdown { font-size: 28px; font-weight: 700; text-align: center; padding: 16px; background: rgba(99,102,241,0.12); border-radius: 12px; margin: 16px 0; }
@@ -193,10 +216,10 @@ function renderFooterBlock() {
   const footer = document.getElementById('site-footer');
   if (!footer) return;
   const primary = block(1);
-  const phone = primary.phone || primary.whatsapp || primary.email || '';
-  if (!phone) { footer.innerHTML = ''; return; }
-  footer.className = 'footer footer-' + (themeBlock().footerStyle || 'minimal');
-  footer.innerHTML = '<span>Contact: ' + esc(phone) + '</span>';
+  const html = contactFooterInnerHtml(primary);
+  if (!html) { footer.innerHTML = ''; return; }
+  footer.className = 'footer footer-store footer-' + (themeBlock().footerStyle || 'minimal');
+  footer.innerHTML = html;
 }
 
 function block(type) {
@@ -281,18 +304,86 @@ function renderSecondary(data, type) {
 function renderTertiary(data, type) {
   const items = data.products || data.menuItems || data.projects || data.gallery || data.branches || [];
   if (!items.length) return `<p>\${esc(data.finalMessage || '')}</p>`;
-  return `<div class="grid">\${items.map(item => {
-    const price = item.price != null ? `\$` + item.price : '';
+  const gridClass = (type === 5 || type === 4) ? 'grid grid-products' : 'grid';
+  return `<div class="\${gridClass}">\${items.map(item => {
+    const pricing = catalogItemPricing(item);
+    const priceHtml = pricing.sale != null
+      ? `<div class="price-row"><span class="price-sale">\${pricing.sale}</span>\${pricing.compare ? `<span class="price-compare">\${pricing.compare}</span>` : ''}</div>`
+      : '';
     const id = esc(item.name || item.title || '');
-    const cartBtn = (type === 5 || type === 4) ? `<button data-cart="\${id}" data-price="\${item.price || 0}">Add</button>` : '';
-    return `<article class="card">\${item.image ? img(item.image, id) : ''}<h3>\${id}</h3><p>\${esc(item.description || item.category || '')}</p><strong>\${price}</strong> \${cartBtn}</article>`;
+    const cartBtn = (type === 5 || type === 4) ? `<button data-cart="\${id}" data-price="\${pricing.saleValue || 0}">Add</button>` : '';
+    const isCatalog = type === 5 || type === 4;
+    const best = item.bestSeller || item.bestseller || item.isBestSeller;
+    const badge = isCatalog && best ? '<span class="badge-bestseller">Best seller</span>' : '';
+    const media = item.image
+      ? (isCatalog
+        ? `<div class="card-img-wrap">\${badge}\${img(item.image, id)}</div>`
+        : img(item.image, id))
+      : (isCatalog && badge ? `<div class="card-img-wrap">\${badge}</div>` : '');
+    return `<article class="card">\${media}<h3>\${id}</h3><p>\${esc(item.description || item.category || '')}</p>\${priceHtml} \${cartBtn}</article>`;
   }).join('')}</div>`;
 }
 
+function catalogItemPricing(item) {
+  const listed = Number(item.price) || 0;
+  const discount = Number(item.discount) || 0;
+  const explicit = Number(item.originalPrice || item.compareAtPrice || item.mrp) || 0;
+  let saleValue = listed;
+  let compareValue = null;
+  if (discount > 0 && listed > 0) {
+    saleValue = listed * (1 - discount / 100);
+    compareValue = listed;
+  } else if (explicit > listed && listed > 0) {
+    saleValue = listed;
+    compareValue = explicit;
+  }
+  const fmt = (n) => {
+    if (!n) return null;
+    const r = Math.round(n * 100) / 100;
+    return r % 1 === 0 ? '\$' + r : '\$' + r.toFixed(2);
+  };
+  return {
+    sale: fmt(saleValue),
+    compare: compareValue && compareValue > saleValue + 0.009 ? fmt(compareValue) : null,
+    saleValue,
+  };
+}
+
+function contactFooterInnerHtml(data) {
+  const phone = String(data.phone || '').trim() || String(data.whatsapp || '').trim();
+  const email = String(data.email || '').trim();
+  const address = String(data.address || '').trim();
+  const social = Array.isArray(data.socialLinks) ? data.socialLinks : [];
+  if (!phone && !email && !address && !social.length) return '';
+
+  const lines = [];
+  if (phone) {
+    const digits = phone.replace(/\\D/g, '');
+    const tel = digits ? `<a href="tel:\${digits}">\${esc(phone)}</a>` : esc(phone);
+    lines.push(`<p class="footer-line">\${tel}</p>`);
+  }
+  if (email) {
+    lines.push(`<p class="footer-line"><a href="mailto:\${esc(email)}">\${esc(email)}</a></p>`);
+  }
+  if (address) {
+    lines.push(`<p class="footer-line">\${esc(address)}</p>`);
+  }
+  if (social.length) {
+    const links = social.map(item => {
+      const url = esc(String(item.url || '').trim());
+      if (!url) return '';
+      const label = esc(String(item.platform || item.icon || 'Link').trim()).slice(0, 2).toUpperCase();
+      return `<a href="\${url}" target="_blank" rel="noopener noreferrer">\${label}</a>`;
+    }).filter(Boolean).join('');
+    if (links) lines.push(`<div class="footer-social">\${links}</div>`);
+  }
+  return lines.join('');
+}
+
 function renderFooter(data) {
-  const phone = data.phone || data.whatsapp || '';
-  if (!phone) return '';
-  return `<footer class="footer">Contact: \${esc(phone)}</footer>`;
+  const html = contactFooterInnerHtml(data);
+  if (!html) return '';
+  return `<footer class="footer footer-store">\${html}</footer>`;
 }
 
 function renderSection(title, html) {

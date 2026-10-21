@@ -157,6 +157,12 @@ abstract final class DefaultContentFactory {
         'mapEmbed':
             'https://maps.google.com/maps?q=120+Market+Street+San+Francisco&output=embed',
         'whatsapp': '+14155550188',
+        'socialLinks': [
+          {'platform': 'Instagram', 'url': 'https://instagram.com', 'icon': 'instagram'},
+          {'platform': 'Facebook', 'url': 'https://facebook.com', 'icon': 'facebook'},
+          {'platform': 'Twitter', 'url': 'https://twitter.com', 'icon': 'twitter'},
+          {'platform': 'LinkedIn', 'url': 'https://linkedin.com', 'icon': 'linkedin'},
+        ],
         'theme': _variantTheme(variant),
       };
 
@@ -251,11 +257,25 @@ abstract final class DefaultContentFactory {
             'subtitle': 'Seven courses · \$85',
             'image': 'assets/images/banner-2.jpg',
           },
+          {
+            'title': 'Happy Hour',
+            'subtitle': 'Mon—Fri 4pm—7pm',
+            'image': 'assets/images/banner-1.jpg',
+          },
         ],
         'offers': [
           {'label': '20% Off First Order', 'code': 'EMBER20'},
         ],
+        'email': 'hello@emberandoak.com',
+        'address': '248 Valencia St, San Francisco, CA 94103',
+        'phone': '+1 (415) 555-0199',
         'whatsapp': '+14155550199',
+        'socialLinks': [
+          {'platform': 'Instagram', 'url': 'https://instagram.com', 'icon': 'instagram'},
+          {'platform': 'Facebook', 'url': 'https://facebook.com', 'icon': 'facebook'},
+          {'platform': 'Twitter', 'url': 'https://twitter.com', 'icon': 'twitter'},
+          {'platform': 'LinkedIn', 'url': 'https://linkedin.com', 'icon': 'linkedin'},
+        ],
         'theme': _variantTheme(variant),
       };
 
@@ -274,23 +294,28 @@ abstract final class DefaultContentFactory {
           {
             'name': 'Charred Octopus',
             'category': 'Starters',
-            'price': 18,
+            'price': 20,
+            'discount': 10,
             'description': 'Smoked paprika, lemon oil, herbs',
             'image': 'assets/images/menu-1.jpg',
             'spicy': false,
+            'bestSeller': true,
           },
           {
             'name': 'Oak-Fired Ribeye',
             'category': 'Mains',
-            'price': 42,
+            'price': 48,
+            'discount': 12,
             'description': 'Garlic butter, roasted roots',
             'image': 'assets/images/menu-2.jpg',
             'spicy': false,
+            'bestSeller': true,
           },
           {
             'name': 'Burnt Basque Cheesecake',
             'category': 'Desserts',
-            'price': 12,
+            'price': 14,
+            'discount': 14,
             'description': 'Seasonal berry compote',
             'image': 'assets/images/menu-3.jpg',
             'spicy': false,
@@ -308,8 +333,27 @@ abstract final class DefaultContentFactory {
             'subtitle': 'Fresh textures for modern living',
             'image': 'assets/images/banner-1.jpg',
           },
+          {
+            'title': 'Bedroom Refresh',
+            'subtitle': 'Calm tones & soft linens',
+            'image': 'assets/images/banner-2.jpg',
+          },
+          {
+            'title': 'Kitchen Essentials',
+            'subtitle': 'Handpicked tools & serveware',
+            'image': 'assets/images/banner-1.jpg',
+          },
         ],
+        'email': 'hello@atelierhome.com',
+        'address': '88 Design District, Austin, TX 78701',
+        'phone': '+1 (415) 555-0200',
         'whatsapp': '+14155550200',
+        'socialLinks': [
+          {'platform': 'Instagram', 'url': 'https://instagram.com', 'icon': 'instagram'},
+          {'platform': 'Facebook', 'url': 'https://facebook.com', 'icon': 'facebook'},
+          {'platform': 'Twitter', 'url': 'https://twitter.com', 'icon': 'twitter'},
+          {'platform': 'LinkedIn', 'url': 'https://linkedin.com', 'icon': 'linkedin'},
+        ],
         'theme': _variantTheme(variant),
       };
 
@@ -331,14 +375,16 @@ abstract final class DefaultContentFactory {
             'discount': 15,
             'image': 'assets/images/product-1.jpg',
             'description': 'Solid oak frame with breathable linen upholstery.',
+            'bestSeller': true,
           },
           {
             'name': 'Ceramic Table Lamp',
             'category': 'Living Room',
-            'price': 89,
-            'discount': 0,
+            'price': 99,
+            'discount': 10,
             'image': 'assets/images/product-2.jpg',
             'description': 'Hand-glazed ceramic base with warm ambient glow.',
+            'bestSeller': true,
           },
           {
             'name': 'Walnut Sideboard',
