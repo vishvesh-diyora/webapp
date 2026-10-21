@@ -9,30 +9,17 @@ abstract class CloudflareEvent extends Equatable {
   List<Object?> get props => [];
 }
 
-class CloudflareStarted extends CloudflareEvent {
-  const CloudflareStarted();
-}
-
-class CloudflareConnectRequested extends CloudflareEvent {
-  const CloudflareConnectRequested({this.resumePublishDocument});
-
-  final WebsiteDocument? resumePublishDocument;
-
-  @override
-  List<Object?> get props => [resumePublishDocument];
-}
-
-class CloudflareDisconnectRequested extends CloudflareEvent {
-  const CloudflareDisconnectRequested();
-}
-
 class CloudflarePublishRequested extends CloudflareEvent {
-  const CloudflarePublishRequested(this.document);
+  const CloudflarePublishRequested({
+    required this.document,
+    required this.username,
+  });
 
   final WebsiteDocument document;
+  final String username;
 
   @override
-  List<Object?> get props => [document];
+  List<Object?> get props => [document, username];
 }
 
 class CloudflarePublishRetry extends CloudflareEvent {
@@ -46,20 +33,8 @@ abstract class CloudflareState extends Equatable {
   List<Object?> get props => [];
 }
 
-class CloudflareInitial extends CloudflareState {
-  const CloudflareInitial();
-}
-
-class CloudflareDisconnected extends CloudflareState {
-  const CloudflareDisconnected();
-}
-
-class CloudflareConnected extends CloudflareState {
-  const CloudflareConnected();
-}
-
-class CloudflareConnecting extends CloudflareState {
-  const CloudflareConnecting();
+class CloudflareIdle extends CloudflareState {
+  const CloudflareIdle();
 }
 
 class CloudflarePublishing extends CloudflareState {
@@ -67,14 +42,16 @@ class CloudflarePublishing extends CloudflareState {
     required this.stage,
     required this.progress,
     required this.document,
+    required this.username,
   });
 
   final String stage;
   final double progress;
   final WebsiteDocument document;
+  final String username;
 
   @override
-  List<Object?> get props => [stage, progress, document];
+  List<Object?> get props => [stage, progress, document, username];
 }
 
 class CloudflarePublishSuccess extends CloudflareState {
@@ -96,22 +73,13 @@ class CloudflarePublishFailure extends CloudflareState {
   const CloudflarePublishFailure({
     required this.message,
     required this.document,
-    this.needsConnect = false,
+    required this.username,
   });
 
   final String message;
   final WebsiteDocument document;
-  final bool needsConnect;
+  final String username;
 
   @override
-  List<Object?> get props => [message, document, needsConnect];
-}
-
-class CloudflareConnectFailure extends CloudflareState {
-  const CloudflareConnectFailure(this.message);
-
-  final String message;
-
-  @override
-  List<Object?> get props => [message];
+  List<Object?> get props => [message, document, username];
 }

@@ -5,16 +5,12 @@ class PublishFailureScreen extends StatelessWidget {
     super.key,
     required this.message,
     required this.onRetry,
-    required this.onConnect,
     required this.onClose,
-    this.needsConnect = false,
   });
 
   final String message;
   final VoidCallback onRetry;
-  final VoidCallback onConnect;
   final VoidCallback onClose;
-  final bool needsConnect;
 
   @override
   Widget build(BuildContext context) {
@@ -35,13 +31,6 @@ class PublishFailureScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(message, textAlign: TextAlign.center),
             const Spacer(),
-            if (needsConnect)
-              FilledButton.icon(
-                onPressed: onConnect,
-                icon: const Icon(Icons.link_rounded),
-                label: const Text('Connect Cloudflare'),
-              ),
-            if (needsConnect) const SizedBox(height: 8),
             FilledButton(onPressed: onRetry, child: const Text('Retry')),
             const SizedBox(height: 8),
             TextButton(onPressed: onClose, child: const Text('Close')),

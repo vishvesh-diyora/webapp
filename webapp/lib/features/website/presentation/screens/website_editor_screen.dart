@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:webapp/features/auth/auth_gate_screen.dart';
 import 'package:webapp/features/cloudflare/data/cloudflare_publish_repository.dart';
 import 'package:webapp/features/cloudflare/presentation/bloc/cloudflare_bloc.dart';
 import 'package:webapp/features/cloudflare/presentation/screens/publish_failure_screen.dart';
 import 'package:webapp/features/cloudflare/presentation/screens/publish_success_screen.dart';
 import 'package:webapp/features/cloudflare/presentation/widgets/publish_progress_dialog.dart';
+import 'package:webapp/features/cloudflare/presentation/widgets/publish_username_dialog.dart';
 import 'package:webapp/features/templates/preview/website_preview_renderer.dart';
 import 'package:webapp/features/website/domain/entities/website_document.dart';
 import 'package:webapp/features/website/presentation/bloc/my_websites_bloc.dart';
@@ -65,11 +68,7 @@ class _WebsiteEditorScreenState extends State<WebsiteEditorScreen> {
                       : const Text('Save'),
                 ),
                 FilledButton(
-                  onPressed: isPublishing
-                      ? null
-                      : () => context.read<CloudflareBloc>().add(
-                            CloudflarePublishRequested(document),
-                          ),
+                  onPressed: isPublishing ? null : () => _startPublish(context, document),
                   child: isPublishing
                       ? const SizedBox(
                           width: 18,
@@ -100,6 +99,30 @@ class _WebsiteEditorScreenState extends State<WebsiteEditorScreen> {
         },
       ),
     );
+  }
+
+  Future<void> _startPublish(BuildContext context, WebsiteDocument document) async {
+    if (Supabase.instance.client.auth.currentSession == null) {
+      await Navigator.of(context).push<void>(
+        MaterialPageRoute<void>(
+          builder: (_) => const AuthGateScreen(modal: true),
+        ),
+      );
+      if (!context.mounted) return;
+      if (Supabase.instance.client.auth.currentSession == null) return;
+    }
+
+    final username = await showPublishUsernameDialog(
+      context,
+      publishRepository: context.read<CloudflarePublishRepository>(),
+      initialUsername: document.deployment?.projectName,
+      websiteId: document.id,
+    );
+    if (username == null || !context.mounted) return;
+
+    context.read<CloudflareBloc>().add(
+          CloudflarePublishRequested(document: document, username: username),
+        );
   }
 
   Future<void> _onCloudflareState(BuildContext context, CloudflareState state) async {
@@ -152,18 +175,6 @@ class _WebsiteEditorScreenState extends State<WebsiteEditorScreen> {
         MaterialPageRoute<void>(
           builder: (_) => PublishFailureScreen(
             message: state.message,
-            needsConnect: state.needsConnect,
-            onConnect: () async {
-              Navigator.of(context).pop();
-              final repo = context.read<CloudflarePublishRepository>();
-              if (state.document.id != null) {
-                await repo.markPendingPublish(state.document.id!);
-              }
-              if (!context.mounted) return;
-              context.read<CloudflareBloc>().add(
-                    CloudflareConnectRequested(resumePublishDocument: state.document),
-                  );
-            },
             onRetry: () {
               Navigator.of(context).pop();
               context.read<CloudflareBloc>().add(const CloudflarePublishRetry());

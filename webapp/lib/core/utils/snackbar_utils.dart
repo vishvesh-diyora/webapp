@@ -14,6 +14,7 @@ class SnackbarUtils {
         SnackBar(
           content: Text(message),
           backgroundColor: const Color(0xFFEF4444),
+          behavior: SnackBarBehavior.floating,
         ),
       );
   }

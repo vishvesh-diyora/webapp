@@ -111,6 +111,25 @@ class CloudflareService {
     return _projectFromJson(Map<String, dynamic>.from(data['result'] as Map));
   }
 
+  /// Returns true when a Pages project (subdomain) already exists on Cloudflare.
+  Future<bool> projectExists({
+    required String accountId,
+    required String projectName,
+    required String accessToken,
+  }) async {
+    try {
+      await getProject(
+        accountId: accountId,
+        projectName: projectName,
+        accessToken: accessToken,
+      );
+      return true;
+    } on CloudflareApiException catch (error) {
+      if (error.statusCode == 404) return false;
+      rethrow;
+    }
+  }
+
   Future<CloudflareDeploymentResult> deployDirectory({
     required String accountId,
     required String projectName,
@@ -119,8 +138,23 @@ class CloudflareService {
     CloudflareDeployProgress? onProgress,
   }) async {
     onProgress?.call('Preparing files', 0.05);
-
     final files = await _collectSiteFiles(siteDirectory);
+    return deployFiles(
+      accountId: accountId,
+      projectName: projectName,
+      files: files,
+      accessToken: accessToken,
+      onProgress: onProgress,
+    );
+  }
+
+  Future<CloudflareDeploymentResult> deployFiles({
+    required String accountId,
+    required String projectName,
+    required Map<String, List<int>> files,
+    required String accessToken,
+    CloudflareDeployProgress? onProgress,
+  }) async {
     if (files.isEmpty) {
       throw CloudflareApiException('No files found in generated website.');
     }

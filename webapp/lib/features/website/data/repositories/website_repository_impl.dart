@@ -59,6 +59,44 @@ class WebsiteRepositoryImpl implements WebsiteRepository {
     await _client.from(_table).delete().eq('id', id);
   }
 
+  @override
+  Future<WebsiteDocument?> fetchPublishedByUsername(String username) async {
+    try {
+      final result = await _client.rpc(
+        'get_website_by_publish_username',
+        params: {'p_username': username},
+      );
+      if (result == null) return null;
+      return WebsiteDocument.fromJson(Map<String, dynamic>.from(result as Map));
+    } on PostgrestException {
+      return null;
+    }
+  }
+
+  @override
+  Future<bool> isPublishUsernameAvailable(
+    String username, {
+    String? excludeWebsiteId,
+  }) async {
+    try {
+      final params = <String, dynamic>{'p_username': username};
+      if (excludeWebsiteId != null) {
+        params['p_website_id'] = excludeWebsiteId;
+      }
+
+      final result = await _client.rpc(
+        'is_publish_username_available',
+        params: params,
+      );
+      return result == true;
+    } on PostgrestException catch (error) {
+      throw StateError(
+        'Database username check is unavailable (${error.message}). '
+        'Run supabase/migrations/005_publish_username.sql in your Supabase SQL editor.',
+      );
+    }
+  }
+
   WebsiteDocument _fromRow(Map<String, dynamic> row) {
     final content = Map<String, dynamic>.from(row['content'] as Map);
     WebsiteDeploymentInfo? deployment;

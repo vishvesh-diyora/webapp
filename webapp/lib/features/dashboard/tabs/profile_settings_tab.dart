@@ -1,12 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:webapp/core/constants/app_constants.dart';
 import 'package:webapp/core/utils/auth_error_messages.dart';
 import 'package:webapp/core/utils/snackbar_utils.dart';
 import 'package:webapp/features/auth/auth_gate_screen.dart';
-import 'package:webapp/features/cloudflare/presentation/bloc/cloudflare_bloc.dart';
 
 /// Profile header, legal links, logout, and account deletion.
 class ProfileSettingsTab extends StatefulWidget {
@@ -167,8 +165,6 @@ class _ProfileSettingsTabState extends State<ProfileSettingsTab> {
                 ],
               ),
               if (isLoggedIn) ...[
-                const SizedBox(height: 16),
-                _CloudflareSection(),
                 const SizedBox(height: 16),
                 _SettingsSection(
                   title: 'Account',
@@ -487,55 +483,6 @@ class _DeleteAccountBlock extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _CloudflareSection extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return BlocConsumer<CloudflareBloc, CloudflareState>(
-      listener: (context, state) {
-        if (state is CloudflareConnectFailure) {
-          SnackbarUtils.showError(context, state.message);
-        }
-      },
-      builder: (context, state) {
-        final connected = state is CloudflareConnected;
-        final connecting = state is CloudflareConnecting;
-
-        return _SettingsSection(
-          title: 'Publishing',
-          children: [
-            _SettingsTile(
-              icon: Icons.cloud_outlined,
-              title: connected ? 'Cloudflare connected' : 'Connect Cloudflare',
-              subtitle: connected
-                  ? 'Ready to publish to Cloudflare Pages'
-                  : 'Authorize once to publish your websites',
-              trailing: connecting
-                  ? const SizedBox(
-                      width: 20,
-                      height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2),
-                    )
-                  : Icon(
-                      connected ? Icons.check_circle : Icons.link,
-                      color: connected ? const Color(0xFF16A34A) : const Color(0xFF64748B),
-                    ),
-              onTap: connecting
-                  ? null
-                  : () {
-                      if (connected) {
-                        context.read<CloudflareBloc>().add(const CloudflareDisconnectRequested());
-                      } else {
-                        context.read<CloudflareBloc>().add(const CloudflareConnectRequested());
-                      }
-                    },
-            ),
-          ],
-        );
-      },
     );
   }
 }

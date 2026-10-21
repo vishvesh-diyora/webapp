@@ -1,60 +1,81 @@
-/// Central application configuration.
-///
-/// Update [supabaseUrl] and [supabaseAnonKey] with your Supabase project
-/// credentials, then run the app with a plain `flutter run` command.
+import 'package:webapp/core/config/env_config.dart';
+
+/// Central application configuration (loaded from `.env` or `--dart-define`).
 class AppConfig {
   AppConfig._();
 
-  // ── Supabase ──────────────────────────────────────────────────────────────
-  // Dashboard → Project Settings → API
-  //
-  // Auth providers (all free tier):
-  //   • Email / Password  — turn OFF "Confirm email" in Auth → Providers → Email
-  //   • Google OAuth
-  //   • Apple OAuth
-  //
-  // Instant signup (no verify-email step):
-  //   1. Supabase → Auth → Providers → Email → disable "Confirm email"
-  //   2. Run SQL: supabase/migrations/002_auto_confirm_email.sql
-  //
-  // Forgot password uses resetPasswordForEmail (free).
-  // Run SQL migration: supabase/migrations/001_check_email_exists.sql
-  //
-  // Supabase Dashboard → Auth → URL Configuration → Redirect URLs:
-  //   Web (dev):  http://localhost:<port>   (auto-detected at runtime)
-  //   Web (prod): set [webRedirectUrl] below, e.g. https://yourdomain.com
-  //   Mobile:     io.supabase.webapp://login-callback
-  //
-  // Site URL (Auth → URL Configuration): set to your production web URL.
+  static const String _defineSupabaseUrl = String.fromEnvironment(
+    'SUPABASE_URL',
+    defaultValue: '',
+  );
 
-  static const String supabaseUrl = 'https://lxkqtjgpblqqydgkqjmj.supabase.co';
-  static const String supabaseAnonKey =
-      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imx4a3F0amdwYmxxcXlkZ2txam1qIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQyMTE3NjAsImV4cCI6MjA5OTc4Nzc2MH0.IoZ6dKbnc2Rkonyb_2Q4zRfwKleT3SU8aXbD2c5sJng';
+  static const String _defineSupabaseAnonKey = String.fromEnvironment(
+    'SUPABASE_ANON_KEY',
+    defaultValue: '',
+  );
+
+  static const String _defineWebRedirectUrl = String.fromEnvironment(
+    'WEB_REDIRECT_URL',
+    defaultValue: '',
+  );
+
+  static const String _defineMobileRedirectUrl = String.fromEnvironment(
+    'MOBILE_REDIRECT_URL',
+    defaultValue: '',
+  );
+
+  static const String _defineCloudflareAccountId = String.fromEnvironment(
+    'CLOUDFLARE_ACCOUNT_ID',
+    defaultValue: '',
+  );
+
+  static const String _defineCloudflareApiToken = String.fromEnvironment(
+    'CLOUDFLARE_API_TOKEN',
+    defaultValue: '',
+  );
+
+  // ── Supabase ──────────────────────────────────────────────────────────────
+  // Set in `.env`: SUPABASE_URL, SUPABASE_ANON_KEY
+
+  static String get supabaseUrl => EnvConfig.resolve(
+        'SUPABASE_URL',
+        compileTimeValue: _defineSupabaseUrl,
+      );
+
+  static String get supabaseAnonKey => EnvConfig.resolve(
+        'SUPABASE_ANON_KEY',
+        compileTimeValue: _defineSupabaseAnonKey,
+      );
 
   /// Production web callback URL. Leave empty to auto-detect from the browser.
-  /// Example: 'https://yourdomain.com'
-  static const String webRedirectUrl = '';
+  static String get webRedirectUrl => EnvConfig.resolve(
+        'WEB_REDIRECT_URL',
+        compileTimeValue: _defineWebRedirectUrl,
+      );
 
   /// Deep link for mobile password-reset and OAuth callbacks.
-  static const String mobileRedirectUrl = 'io.supabase.webapp://login-callback';
+  static String get mobileRedirectUrl => EnvConfig.resolve(
+        'MOBILE_REDIRECT_URL',
+        compileTimeValue: _defineMobileRedirectUrl,
+        fallback: 'io.supabase.webapp://login-callback',
+      );
 
-  // ── Cloudflare Pages OAuth ────────────────────────────────────────────────
-  // Dashboard → Manage Account → OAuth clients → Create (Authorization Code + PKCE).
-  // Scopes: Account Read + Cloudflare Pages Edit.
-  // Register redirect URI (same as Supabase callback):
-  //   Web:  your production URL or http://localhost:<port>
-  //   Mobile: io.supabase.webapp://login-callback
-  //
-  // Build with:
-  //   flutter run --dart-define=CLOUDFLARE_OAUTH_CLIENT_ID=your_client_id
-  // Optional scopes override:
-  //   --dart-define=CLOUDFLARE_OAUTH_SCOPES="account:read cloudflare-pages:edit"
+  // ── Cloudflare Pages (single internal account) ─────────────────────────────
+  // Set in `.env`: CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_API_TOKEN
+
+  static String get cloudflareAccountId => EnvConfig.resolve(
+        'CLOUDFLARE_ACCOUNT_ID',
+        compileTimeValue: _defineCloudflareAccountId,
+      );
+
+  static String get cloudflareApiToken => EnvConfig.resolve(
+        'CLOUDFLARE_API_TOKEN',
+        compileTimeValue: _defineCloudflareApiToken,
+      );
 
   // ── App ───────────────────────────────────────────────────────────────────
 
   static const String appName = 'WebApp Configurator';
 
-  /// When `true`, users must sign in before using the app.
-  /// When `false`, the app opens directly and login is available from Profile.
   static const bool isLoginSignupMandatory = false;
 }

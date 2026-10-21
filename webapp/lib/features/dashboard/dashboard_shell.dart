@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:webapp/core/constants/app_constants.dart';
-import 'package:webapp/features/cloudflare/data/cloudflare_oauth_service.dart';
 import 'package:webapp/features/cloudflare/data/cloudflare_publish_repository.dart';
 import 'package:webapp/features/cloudflare/data/cloudflare_service.dart';
 import 'package:webapp/features/cloudflare/presentation/bloc/cloudflare_bloc.dart';
@@ -61,24 +60,22 @@ class _DashboardShellState extends State<DashboardShell> {
               ),
             ],
           ),
-          floatingActionButton: _currentIndex == 0
-              ? null
-              : FloatingActionButton.small(
-                  onPressed: () => _openProfile(context),
-                  child: const Icon(Icons.person_outline),
-                ),
+          floatingActionButton: FloatingActionButton.small(
+            onPressed: () => _openProfile(context),
+            child: const Icon(Icons.person_outline),
+          ),
         );
       },
     );
   }
 
   void _openProfile(BuildContext context) {
-    showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      builder: (_) => const SizedBox(
-        height: 420,
-        child: ProfileSettingsTab(),
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (_) => Scaffold(
+          appBar: AppBar(title: const Text('Profile')),
+          body: const ProfileSettingsTab(),
+        ),
       ),
     );
   }
@@ -93,18 +90,15 @@ class AppProviders extends StatelessWidget {
   Widget build(BuildContext context) {
     final client = Supabase.instance.client;
     final repository = WebsiteRepositoryImpl(client);
-    final oauthService = CloudflareOAuthService();
     final cloudflareService = CloudflareService();
     final publishRepository = CloudflarePublishRepository(
       websiteRepository: repository,
-      oauthService: oauthService,
       cloudflareService: cloudflareService,
     );
 
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider<WebsiteRepository>.value(value: repository),
-        RepositoryProvider<CloudflareOAuthService>.value(value: oauthService),
         RepositoryProvider<CloudflareService>.value(value: cloudflareService),
         RepositoryProvider<CloudflarePublishRepository>.value(value: publishRepository),
       ],
@@ -116,9 +110,7 @@ class AppProviders extends StatelessWidget {
           BlocProvider(
             create: (context) => CloudflareBloc(
               publishRepository: publishRepository,
-              oauthService: oauthService,
-              websiteRepository: repository,
-            )..add(const CloudflareStarted()),
+            ),
           ),
         ],
         child: child,

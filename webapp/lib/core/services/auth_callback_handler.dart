@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:webapp/core/utils/auth_redirect_urls.dart';
+import 'package:webapp/core/utils/web_auth_url_cleaner.dart';
 
 /// Parses Supabase auth callbacks from email links and OAuth redirects.
 class AuthCallbackHandler {
@@ -11,12 +12,23 @@ class AuthCallbackHandler {
     if (!kIsWeb) return;
     if (!AuthRedirectUrls.hasAuthCallbackInUrl()) return;
 
+    final auth = Supabase.instance.client.auth;
+    final existingSession = auth.currentSession;
+
+    // A saved session beats stale #access_token fragments left in the URL.
+    if (existingSession != null) {
+      clearAuthParamsFromUrl();
+      return;
+    }
+
     try {
-      await Supabase.instance.client.auth.getSessionFromUrl(Uri.base);
+      await auth.getSessionFromUrl(Uri.base);
     } on AuthException {
       // Invalid or expired link — router will show auth gate.
     } catch (_) {
       // Ignore malformed callback URLs.
+    } finally {
+      clearAuthParamsFromUrl();
     }
   }
 

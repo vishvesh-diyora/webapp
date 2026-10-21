@@ -39,7 +39,9 @@ class _AppRouterState extends State<AppRouter> {
   }
 
   Future<void> _bootstrapAuth() async {
-    // Web callback may have already been parsed in main(); sync recovery state.
+    // Wait for Supabase to hydrate the persisted session from storage.
+    await _authStream.first;
+
     if (AuthRedirectUrls.isPasswordRecoveryUrl()) {
       _passwordRecovery = true;
     }

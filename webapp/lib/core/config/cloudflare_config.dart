@@ -1,42 +1,87 @@
-import 'package:webapp/core/utils/auth_redirect_urls.dart';
+import 'package:webapp/core/config/app_config.dart';
 
-/// Cloudflare OAuth + Pages configuration.
-///
-/// Create an OAuth client in Cloudflare Dashboard → Manage Account → OAuth clients.
-/// Grant type: Authorization Code with PKCE (public client, no secret in app).
-/// Required scopes: include Cloudflare Pages **Edit** (and Account **Read**).
+/// Internal Cloudflare Pages credentials (single account for all users).
 class CloudflareConfig {
   CloudflareConfig._();
 
-  /// Public OAuth client ID from Cloudflare OAuth clients dashboard.
-  static const String clientId = String.fromEnvironment(
-    'CLOUDFLARE_OAUTH_CLIENT_ID',
-    defaultValue: '',
-  );
-
-  static const String authorizationEndpoint = 'https://dash.cloudflare.com/oauth2/auth';
-  static const String tokenEndpoint = 'https://dash.cloudflare.com/oauth2/token';
-  static const String revokeEndpoint = 'https://dash.cloudflare.com/oauth2/revoke';
   static const String apiBase = 'https://api.cloudflare.com/client/v4';
 
-  /// Space-separated OAuth scopes configured on your Cloudflare OAuth client.
-  static const String scopes = String.fromEnvironment(
-    'CLOUDFLARE_OAUTH_SCOPES',
-    defaultValue: 'account:read cloudflare-pages:edit',
-  );
+  static String get accountId => AppConfig.cloudflareAccountId;
 
-  static const String oauthStatePrefix = 'cf_oauth_';
+  static String get apiToken => AppConfig.cloudflareApiToken;
 
-  static String redirectUri() => AuthRedirectUrls.callback();
-
-  static bool get isConfigured => clientId.isNotEmpty;
+  static bool get isConfigured => accountId.isNotEmpty && apiToken.isNotEmpty;
 
   static void assertConfigured() {
     if (!isConfigured) {
       throw StateError(
-        'Cloudflare OAuth is not configured. Set CLOUDFLARE_OAUTH_CLIENT_ID at build time '
-        'and register redirect URI: ${redirectUri()}',
+        'Cloudflare is not configured. Add CLOUDFLARE_ACCOUNT_ID and '
+        'CLOUDFLARE_API_TOKEN to your .env file (copy from .env.example).',
       );
     }
   }
+
+  static String pagesUrlForUsername(String username) =>
+      'https://${normalizeUsername(username)}.pages.dev';
 }
+
+/// Validates and normalizes publish usernames (Cloudflare Pages project names).
+class PublishUsername {
+  PublishUsername._();
+
+  static const minLength = 3;
+  static const maxLength = 58;
+
+  static const reserved = {
+    'www',
+    'api',
+    'admin',
+    'app',
+    'mail',
+    'ftp',
+    'cdn',
+    'static',
+    'assets',
+    'dashboard',
+    'login',
+    'auth',
+    'oauth',
+    'help',
+    'support',
+    'status',
+    'blog',
+    'dev',
+    'staging',
+    'test',
+    'null',
+    'undefined',
+  };
+
+  static String normalize(String input) {
+    var slug = input.trim().toLowerCase().replaceAll(
+      RegExp(r'[^a-z0-9-]+'),
+      '-',
+    );
+    slug = slug.replaceAll(RegExp(r'-+'), '-').replaceAll(RegExp(r'^-|-$'), '');
+    if (slug.length > maxLength) {
+      slug = slug.substring(0, maxLength).replaceAll(RegExp(r'-+$'), '');
+    }
+    return slug;
+  }
+
+  static String? validate(String raw) {
+    final username = normalize(raw);
+    if (username.length < minLength) {
+      return 'Username must be at least $minLength characters.';
+    }
+    if (!RegExp(r'^[a-z0-9]([a-z0-9-]*[a-z0-9])?$').hasMatch(username)) {
+      return 'Use letters, numbers, and hyphens only (no leading/trailing hyphen).';
+    }
+    if (reserved.contains(username)) {
+      return 'That username is reserved. Choose another.';
+    }
+    return null;
+  }
+}
+
+String normalizeUsername(String input) => PublishUsername.normalize(input);

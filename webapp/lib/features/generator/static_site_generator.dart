@@ -3,7 +3,9 @@ import 'dart:io';
 
 import 'package:archive/archive.dart';
 import 'package:path/path.dart' as p;
-import 'package:webapp/core/services/image_asset_service.dart';
+import 'package:webapp/core/config/app_config.dart';
+import 'package:webapp/features/generator/generated_site_bundle.dart';
+import 'package:webapp/features/generator/publish_image_collector.dart';
 import 'package:webapp/features/website/domain/entities/website_document.dart';
 
 class PublishResult {
@@ -24,27 +26,19 @@ class StaticSiteGenerator {
     required WebsiteDocument document,
     required String outputDirectory,
   }) async {
+    final bundle = await buildSiteFiles(document);
+
     final siteDir = Directory(outputDirectory);
     if (siteDir.existsSync()) {
       await siteDir.delete(recursive: true);
     }
     await siteDir.create(recursive: true);
 
-    final assetsDir = Directory(p.join(outputDirectory, 'assets', 'images'));
-    await assetsDir.create(recursive: true);
-
-    final publishedJson = document.toPublishedJson();
-    await ImageAssetService.copyDocumentImagesToPublishDir(
-      publishedJson,
-      assetsDir.path,
-    );
-    await _writePlaceholderImages(assetsDir.path);
-    await File(p.join(outputDirectory, 'content.json')).writeAsString(
-      const JsonEncoder.withIndent('  ').convert(publishedJson),
-    );
-    await File(p.join(outputDirectory, 'index.html')).writeAsString(_html(document));
-    await File(p.join(outputDirectory, 'style.css')).writeAsString(_css(document));
-    await File(p.join(outputDirectory, 'script.js')).writeAsString(_js(document));
+    for (final entry in bundle.files.entries) {
+      final target = File(p.join(outputDirectory, entry.key));
+      await target.parent.create(recursive: true);
+      await target.writeAsBytes(entry.value);
+    }
 
     final zipPath = p.join(p.dirname(outputDirectory), '${_slug(document.name)}.zip');
     await _zipDirectory(outputDirectory, zipPath);
@@ -52,34 +46,46 @@ class StaticSiteGenerator {
     return PublishResult(outputPath: outputDirectory, zipPath: zipPath);
   }
 
-  Future<void> _writePlaceholderImages(String dir) async {
-    const files = [
-      'logo.png',
-      'profile.jpg',
-      'banner-1.jpg',
-      'banner-2.jpg',
-      'product-1.jpg',
-      'product-2.jpg',
-      'product-3.jpg',
-      'gallery-1.jpg',
-      'gallery-2.jpg',
-      'menu-1.jpg',
-      'menu-2.jpg',
-      'menu-3.jpg',
-      'reveal-1.jpg',
-      'reveal-2.jpg',
-      'gift-cover.jpg',
-      'project-1.jpg',
-      'team-1.jpg',
+  /// Builds static site files in memory (works on web and native).
+  Future<GeneratedSiteBundle> buildSiteFiles(WebsiteDocument document) async {
+    final publishedJson = document.toPublishedJson();
+    final files = <String, List<int>>{
+      'index.html': utf8.encode(_html(document)),
+      'style.css': utf8.encode(_css(document)),
+      'script.js': utf8.encode(_js(document)),
+    };
+
+    files.addAll(await collectPublishImages(publishedJson));
+    _addPlaceholderImages(files);
+
+    return GeneratedSiteBundle(files: files);
+  }
+
+  void _addPlaceholderImages(Map<String, List<int>> files) {
+    const placeholders = [
+      'assets/images/logo.png',
+      'assets/images/profile.jpg',
+      'assets/images/banner-1.jpg',
+      'assets/images/banner-2.jpg',
+      'assets/images/product-1.jpg',
+      'assets/images/product-2.jpg',
+      'assets/images/product-3.jpg',
+      'assets/images/gallery-1.jpg',
+      'assets/images/gallery-2.jpg',
+      'assets/images/menu-1.jpg',
+      'assets/images/menu-2.jpg',
+      'assets/images/menu-3.jpg',
+      'assets/images/reveal-1.jpg',
+      'assets/images/reveal-2.jpg',
+      'assets/images/gift-cover.jpg',
+      'assets/images/project-1.jpg',
+      'assets/images/team-1.jpg',
     ];
     final png = base64Decode(
       'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==',
     );
-    for (final file in files) {
-      final target = File(p.join(dir, file));
-      if (!target.existsSync()) {
-        await target.writeAsBytes(png);
-      }
+    for (final path in placeholders) {
+      files.putIfAbsent(path, () => png);
     }
   }
 
@@ -159,12 +165,27 @@ button, .btn { border: 0; border-radius: 999px; padding: 10px 16px; cursor: poin
   }
 
   String _js(WebsiteDocument document) {
+    final supabaseUrl = AppConfig.supabaseUrl;
+    final anonKey = AppConfig.supabaseAnonKey;
     return '''
 let content = {};
 const cartKey = 'website_cart';
 
 async function boot() {
-  const res = await fetch('content.json');
+  const username = location.hostname.split('.')[0];
+  const res = await fetch(${jsonEncode('$supabaseUrl/rest/v1/rpc/get_website_by_publish_username')}, {
+    method: 'POST',
+    headers: {
+      'apikey': ${jsonEncode(anonKey)},
+      'Authorization': ${jsonEncode('Bearer $anonKey')},
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ p_username: username }),
+  });
+  if (!res.ok) {
+    document.getElementById('app').innerHTML = '<section class="section"><h2>Website not found</h2></section>';
+    return;
+  }
   content = await res.json();
   renderNav();
   render();
