@@ -1,7 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:webapp/features/auth/auth_gate_screen.dart';
 import 'package:webapp/features/cloudflare/data/cloudflare_publish_repository.dart';
 import 'package:webapp/features/cloudflare/presentation/bloc/cloudflare_bloc.dart';
 import 'package:webapp/features/cloudflare/presentation/screens/publish_failure_screen.dart';
@@ -102,16 +100,6 @@ class _WebsiteEditorScreenState extends State<WebsiteEditorScreen> {
   }
 
   Future<void> _startPublish(BuildContext context, WebsiteDocument document) async {
-    if (Supabase.instance.client.auth.currentSession == null) {
-      await Navigator.of(context).push<void>(
-        MaterialPageRoute<void>(
-          builder: (_) => const AuthGateScreen(modal: true),
-        ),
-      );
-      if (!context.mounted) return;
-      if (Supabase.instance.client.auth.currentSession == null) return;
-    }
-
     final username = await showPublishUsernameDialog(
       context,
       publishRepository: context.read<CloudflarePublishRepository>(),

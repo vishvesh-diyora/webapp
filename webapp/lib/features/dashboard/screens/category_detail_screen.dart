@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:webapp/core/domain/category_type.dart';
 import 'package:webapp/features/dashboard/data/category_templates_data.dart';
 import 'package:webapp/features/dashboard/widgets/category_template_preview_content.dart';
 import 'package:webapp/features/dashboard/widgets/portfolio/portfolio_screen_background.dart';
@@ -127,7 +128,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(_selectedDocument.name),
+        title: Text(CategoryType.homeTitle(widget.categoryType)),
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),

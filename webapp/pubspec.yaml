@@ -1,5 +1,5 @@
 name: webapp
-description: "A production-ready Flutter web and mobile app with Supabase auth."
+description: "Flutter website configurator with local storage and Cloudflare publish."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -11,7 +11,6 @@ dependencies:
   flutter:
     sdk: flutter
   cupertino_icons: ^1.0.8
-  supabase_flutter: ^2.9.0
   shared_preferences: ^2.5.3
   url_launcher: ^6.3.1
   flutter_bloc: ^9.1.1

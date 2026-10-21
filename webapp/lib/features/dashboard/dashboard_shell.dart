@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+
+import 'package:webapp/core/services/preferences_service.dart';
+import 'package:webapp/features/website/data/repositories/local_website_repository.dart';
 import 'package:webapp/core/constants/app_constants.dart';
 import 'package:webapp/features/cloudflare/data/cloudflare_publish_repository.dart';
 import 'package:webapp/features/cloudflare/data/cloudflare_service.dart';
 import 'package:webapp/features/cloudflare/presentation/bloc/cloudflare_bloc.dart';
 import 'package:webapp/features/dashboard/tabs/home_configurator_tab.dart';
-import 'package:webapp/features/website/data/repositories/website_repository_impl.dart';
 import 'package:webapp/features/website/domain/repositories/website_repository.dart';
 import 'package:webapp/features/website/presentation/bloc/my_websites_bloc.dart';
 import 'package:webapp/features/website/presentation/screens/my_websites_screen.dart';
@@ -98,8 +99,7 @@ class AppProviders extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final client = Supabase.instance.client;
-    final repository = WebsiteRepositoryImpl(client);
+    final repository = LocalWebsiteRepository(PreferencesService.shared);
     final cloudflareService = CloudflareService();
     final publishRepository = CloudflarePublishRepository(
       websiteRepository: repository,

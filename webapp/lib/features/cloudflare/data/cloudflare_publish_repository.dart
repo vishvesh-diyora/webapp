@@ -21,7 +21,7 @@ class CloudflarePublishResult {
 
 typedef PublishProgressCallback = void Function(String stage, double progress);
 
-/// Saves website JSON in Supabase and deploys a static shell to Cloudflare Pages.
+/// Saves website JSON locally and deploys a static site to Cloudflare Pages.
 class CloudflarePublishRepository {
   CloudflarePublishRepository({
     required WebsiteRepository websiteRepository,

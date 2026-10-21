@@ -1,6 +1,6 @@
 import 'package:equatable/equatable.dart';
 
-/// Cloudflare deployment metadata stored in Supabase (not in published content.json).
+/// Cloudflare deployment metadata stored locally (not in published static files).
 class WebsiteDeploymentInfo extends Equatable {
   const WebsiteDeploymentInfo({
     required this.publishedUrl,

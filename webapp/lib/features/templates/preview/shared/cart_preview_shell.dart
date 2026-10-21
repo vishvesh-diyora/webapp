@@ -53,41 +53,45 @@ class _CartPreviewShellState extends State<CartPreviewShell> {
     final total = _cart.values.fold<double>(0, (sum, line) => sum + line.price * line.qty);
     final count = _cart.values.fold<int>(0, (sum, line) => sum + line.qty);
 
+    final barHeight = widget.compact ? 52.0 : 56.0;
+    final showCartBar = count > 0;
+
     return CartScope(
       addToCart: _addItem,
       child: Stack(
         children: [
           Padding(
-            padding: EdgeInsets.only(bottom: widget.compact ? 52 : 56),
+            padding: EdgeInsets.only(bottom: showCartBar ? barHeight : 0),
             child: widget.child,
           ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: Material(
-              elevation: 8,
-              color: const Color(0xFF111827),
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: widget.compact ? 12 : 16, vertical: 10),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        count == 0 ? 'Cart empty' : '$count item(s) · \$${total.toStringAsFixed(2)}',
-                        style: TextStyle(color: Colors.white, fontSize: widget.compact ? 12 : 14),
+          if (showCartBar)
+            Positioned(
+              left: 0,
+              right: 0,
+              bottom: 0,
+              child: Material(
+                elevation: 8,
+                color: const Color(0xFF111827),
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: widget.compact ? 12 : 16, vertical: 10),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          '$count item(s) · \$${total.toStringAsFixed(2)}',
+                          style: TextStyle(color: Colors.white, fontSize: widget.compact ? 12 : 14),
+                        ),
                       ),
-                    ),
-                    if (whatsapp.isNotEmpty && count > 0)
-                      FilledButton(
-                        onPressed: () {},
-                        child: Text('WhatsApp', style: TextStyle(fontSize: widget.compact ? 12 : 14)),
-                      ),
-                  ],
+                      if (whatsapp.isNotEmpty)
+                        FilledButton(
+                          onPressed: () {},
+                          child: Text('WhatsApp', style: TextStyle(fontSize: widget.compact ? 12 : 14)),
+                        ),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );

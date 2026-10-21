@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:archive/archive.dart';
 import 'package:path/path.dart' as p;
-import 'package:webapp/core/config/app_config.dart';
 import 'package:webapp/features/generator/generated_site_bundle.dart';
 import 'package:webapp/features/generator/publish_image_collector.dart';
 import 'package:webapp/features/website/domain/entities/website_document.dart';
@@ -165,28 +164,12 @@ button, .btn { border: 0; border-radius: 999px; padding: 10px 16px; cursor: poin
   }
 
   String _js(WebsiteDocument document) {
-    final supabaseUrl = AppConfig.supabaseUrl;
-    final anonKey = AppConfig.supabaseAnonKey;
+    final embedded = jsonEncode(document.toPublishedJson());
     return '''
-let content = {};
+let content = $embedded;
 const cartKey = 'website_cart';
 
-async function boot() {
-  const username = location.hostname.split('.')[0];
-  const res = await fetch(${jsonEncode('$supabaseUrl/rest/v1/rpc/get_website_by_publish_username')}, {
-    method: 'POST',
-    headers: {
-      'apikey': ${jsonEncode(anonKey)},
-      'Authorization': ${jsonEncode('Bearer $anonKey')},
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ p_username: username }),
-  });
-  if (!res.ok) {
-    document.getElementById('app').innerHTML = '<section class="section"><h2>Website not found</h2></section>';
-    return;
-  }
-  content = await res.json();
+function boot() {
   renderNav();
   render();
   renderFooterBlock();
@@ -405,11 +388,16 @@ function renderCartBar() {
   }
   const cart = getCart();
   const items = Object.values(cart);
+  if (!items.length) {
+    bar.style.display = 'none';
+    return;
+  }
+  bar.style.display = 'flex';
   const total = items.reduce((sum, item) => sum + item.price * item.qty, 0);
   const whatsapp = block(1).whatsapp || block(1).phone || '';
   const message = encodeURIComponent(items.map(i => `\${i.name} x\${i.qty}`).join('\\n') + `\\nTotal: \$\${total.toFixed(2)}`);
-  bar.innerHTML = `<span>\${items.length ? `\${items.length} item(s) · \$\${total.toFixed(2)}` : 'Cart empty'}</span>` +
-    (whatsapp && items.length ? `<a class="btn" href="https://wa.me/\${whatsapp.replace(/\\D/g,'')}?text=\${message}">WhatsApp Checkout</a>` : '');
+  bar.innerHTML = `<span>\${items.length} item(s) · \$\${total.toFixed(2)}</span>` +
+    (whatsapp ? `<a class="btn" href="https://wa.me/\${whatsapp.replace(/\\D/g,'')}?text=\${message}">WhatsApp Checkout</a>` : '');
 }
 
 function esc(value) {

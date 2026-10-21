@@ -24,6 +24,16 @@ abstract final class CategoryType {
         _ => 'Website',
       };
 
+  /// Title shown on the home category list and category detail app bar.
+  static String homeTitle(int type) => switch (type) {
+        ecommerce => 'Ecommerce Catalogue',
+        restaurantMenu => 'Restaurant Menu',
+        businessProfile => 'Business Profile',
+        portfolio => 'Portfolio',
+        giftReveal => 'Gift Reveal',
+        _ => label(type),
+      };
+
   static String description(int type) => switch (type) {
         portfolio =>
           'Showcase projects, experience, skills, and testimonials.',

@@ -4,7 +4,7 @@ import 'package:webapp/features/templates/preview/website_preview_renderer.dart'
 import 'package:webapp/features/website/domain/entities/website_document.dart';
 import 'package:webapp/features/website/domain/repositories/website_repository.dart';
 
-/// Loads a published website from Supabase using the `{username}.pages.dev` host.
+/// Loads a published website saved on this device for the `{username}.pages.dev` host.
 class PublishedSiteScreen extends StatefulWidget {
   const PublishedSiteScreen({
     super.key,

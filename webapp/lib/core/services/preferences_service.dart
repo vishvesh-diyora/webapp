@@ -21,6 +21,8 @@ class PreferencesService {
     return prefs;
   }
 
+  static SharedPreferences get shared => _instance;
+
   /// Returns `true` when onboarding has never been completed.
   static bool get isFirstInstall =>
       _instance.getBool(AppConstants.isFirstInstallKey) ?? true;

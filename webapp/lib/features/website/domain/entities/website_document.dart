@@ -1,7 +1,7 @@
 import 'package:equatable/equatable.dart';
 import 'package:webapp/features/cloudflare/domain/entities/website_deployment_info.dart';
 
-/// Unified website JSON model used by editor, preview, generator, and Supabase.
+/// Unified website JSON model used by editor, preview, generator, and local storage.
 class WebsiteDocument extends Equatable {
   const WebsiteDocument({
     required this.type,
