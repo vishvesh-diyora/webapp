@@ -8,6 +8,9 @@ class AppConstants {
   static const double maxContentWidth = 480;
   static const double maxDashboardWidth = 960;
 
+  /// Horizontal inset for dashboard tabs and the bottom nav bar.
+  static const double dashboardHorizontalGutter = 20;
+
   static const String termsUrl = 'https://example.com/terms';
   static const String privacyUrl = 'https://example.com/privacy';
   static const String aboutUrl = 'https://example.com/about';

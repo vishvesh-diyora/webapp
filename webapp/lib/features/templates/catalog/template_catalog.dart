@@ -50,9 +50,9 @@ class TemplateDefinition {
   }
 }
 
-/// 110 production templates — 22 per category.
+/// One default template per category.
 abstract final class TemplateCatalog {
-  static const int templatesPerCategory = 22;
+  static const int templatesPerCategory = 1;
 
   static List<TemplateDefinition> forCategory(int type) {
     return all.where((template) => template.type == type).toList();
@@ -77,19 +77,21 @@ abstract final class TemplateCatalog {
   }
 
   static List<TemplateDefinition> get all => [
-        ..._categoryTemplates(CategoryType.portfolio, _portfolioNames),
-        ..._categoryTemplates(CategoryType.businessProfile, _businessNames),
-        ..._categoryTemplates(CategoryType.giftReveal, _giftNames),
-        ..._categoryTemplates(CategoryType.restaurantMenu, _restaurantNames),
         ..._categoryTemplates(CategoryType.ecommerce, _ecommerceNames),
+        ..._categoryTemplates(CategoryType.restaurantMenu, _restaurantNames),
+        ..._categoryTemplates(CategoryType.businessProfile, _businessNames),
+        ..._categoryTemplates(CategoryType.portfolio, _portfolioNames),
+        ..._categoryTemplates(CategoryType.giftReveal, _giftNames),
       ];
 
   static List<TemplateDefinition> _categoryTemplates(
     int type,
     List<_TemplateMeta> metas,
   ) {
+    if (metas.isEmpty) return const [];
+    final count = metas.length < templatesPerCategory ? metas.length : templatesPerCategory;
     return [
-      for (var i = 0; i < metas.length; i++)
+      for (var i = 0; i < count; i++)
         TemplateDefinition(
           type: type,
           templateType: i + 1,

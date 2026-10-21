@@ -11,6 +11,7 @@ import 'package:webapp/features/website/domain/repositories/website_repository.d
 import 'package:webapp/features/website/presentation/bloc/my_websites_bloc.dart';
 import 'package:webapp/features/website/presentation/screens/my_websites_screen.dart';
 import 'package:webapp/features/dashboard/tabs/profile_settings_tab.dart';
+import 'package:webapp/features/dashboard/widgets/dashboard_bottom_nav.dart';
 
 class DashboardShell extends StatefulWidget {
   const DashboardShell({super.key});
@@ -20,7 +21,27 @@ class DashboardShell extends StatefulWidget {
 }
 
 class _DashboardShellState extends State<DashboardShell> {
+  static const _tabCount = 3;
+  static const _tabSwitchDuration = Duration(milliseconds: 320);
+
   int _currentIndex = 0;
+  late final PageController _pageController = PageController(initialPage: 0);
+
+  @override
+  void dispose() {
+    _pageController.dispose();
+    super.dispose();
+  }
+
+  void _onTabSelected(int index) {
+    if (index == _currentIndex) return;
+    setState(() => _currentIndex = index);
+    _pageController.animateToPage(
+      index,
+      duration: _tabSwitchDuration,
+      curve: Curves.easeOutCubic,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,48 +56,35 @@ class _DashboardShellState extends State<DashboardShell> {
             alignment: Alignment.topCenter,
             child: SizedBox(
               width: maxWidth,
-              child: IndexedStack(
-                index: _currentIndex,
+              child: PageView(
+                controller: _pageController,
+                physics: const NeverScrollableScrollPhysics(),
+                onPageChanged: (index) {
+                  if (index != _currentIndex) {
+                    setState(() => _currentIndex = index);
+                  }
+                },
                 children: const [
                   HomeConfiguratorTab(),
                   MyWebsitesScreen(),
+                  ProfileSettingsTab(),
                 ],
               ),
             ),
           ),
-          bottomNavigationBar: NavigationBar(
-            selectedIndex: _currentIndex,
-            onDestinationSelected: (index) => setState(() => _currentIndex = index),
-            destinations: const [
-              NavigationDestination(
-                icon: Icon(Icons.add_circle_outline),
-                selectedIcon: Icon(Icons.add_circle),
-                label: 'Create Website',
+          bottomNavigationBar: ColoredBox(
+            color: Colors.transparent,
+            child: SafeArea(
+              top: false,
+              child: DashboardBottomNav(
+                currentIndex: _currentIndex,
+                itemCount: _tabCount,
+                onSelected: _onTabSelected,
               ),
-              NavigationDestination(
-                icon: Icon(Icons.web_asset_outlined),
-                selectedIcon: Icon(Icons.web_asset),
-                label: 'My Websites',
-              ),
-            ],
-          ),
-          floatingActionButton: FloatingActionButton.small(
-            onPressed: () => _openProfile(context),
-            child: const Icon(Icons.person_outline),
+            ),
           ),
         );
       },
-    );
-  }
-
-  void _openProfile(BuildContext context) {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => Scaffold(
-          appBar: AppBar(title: const Text('Profile')),
-          body: const ProfileSettingsTab(),
-        ),
-      ),
     );
   }
 }

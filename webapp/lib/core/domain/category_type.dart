@@ -1,17 +1,18 @@
 /// Website category identifiers — fixed across app, editor, preview, and generator.
 abstract final class CategoryType {
-  static const int portfolio = 1;
-  static const int businessProfile = 2;
-  static const int giftReveal = 3;
-  static const int restaurantMenu = 4;
-  static const int ecommerce = 5;
+  static const int ecommerce = 1;
+  static const int restaurantMenu = 2;
+  static const int businessProfile = 3;
+  static const int portfolio = 4;
+  static const int giftReveal = 5;
 
+  /// Home screen and picker order.
   static const List<int> all = [
-    portfolio,
-    businessProfile,
-    giftReveal,
-    restaurantMenu,
     ecommerce,
+    restaurantMenu,
+    businessProfile,
+    portfolio,
+    giftReveal,
   ];
 
   static String label(int type) => switch (type) {

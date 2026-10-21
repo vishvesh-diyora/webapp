@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
@@ -41,6 +42,48 @@ abstract final class ImageAssetService {
     return file.existsSync() ? file : null;
   }
 
+  static bool _needsLayoutResolve(double width, double height) =>
+      !width.isFinite || width <= 0 || !height.isFinite || height <= 0;
+
+  static ({double width, double height}) _resolveSize(
+    double width,
+    double height,
+    BoxConstraints constraints,
+  ) {
+    var w = width;
+    var h = height;
+
+    if (!w.isFinite || w <= 0) {
+      if (constraints.maxWidth.isFinite && constraints.maxWidth > 0) {
+        w = constraints.maxWidth;
+      } else if (h.isFinite && h > 0) {
+        w = h;
+      } else {
+        w = 200;
+      }
+    }
+
+    if (!h.isFinite || h <= 0) {
+      if (constraints.maxHeight.isFinite && constraints.maxHeight > 0) {
+        h = constraints.maxHeight;
+      } else if (w.isFinite && w > 0) {
+        h = w * 0.75;
+      } else {
+        h = 200;
+      }
+    }
+
+    return (width: w, height: h);
+  }
+
+  static double _placeholderIconSize(double width, double height) {
+    final shortest = math.min(
+      width.isFinite && width > 0 ? width : 120,
+      height.isFinite && height > 0 ? height : 120,
+    );
+    return (shortest * 0.28).clamp(16.0, 56.0);
+  }
+
   static Widget buildImage({
     required String? path,
     required double width,
@@ -49,6 +92,22 @@ abstract final class ImageAssetService {
     BorderRadius? borderRadius,
     Color? placeholderColor,
   }) {
+    if (_needsLayoutResolve(width, height)) {
+      return LayoutBuilder(
+        builder: (context, constraints) {
+          final resolved = _resolveSize(width, height, constraints);
+          return buildImage(
+            path: path,
+            width: resolved.width,
+            height: resolved.height,
+            fit: fit,
+            borderRadius: borderRadius,
+            placeholderColor: placeholderColor,
+          );
+        },
+      );
+    }
+
     Widget child;
     if (path == null || path.isEmpty) {
       child = _placeholder(width, height, placeholderColor);
@@ -75,12 +134,17 @@ abstract final class ImageAssetService {
   }
 
   static Widget _placeholder(double width, double height, Color? color) {
+    final iconSize = _placeholderIconSize(width, height);
     return Container(
       width: width,
       height: height,
       color: color ?? const Color(0xFFE2E8F0),
       alignment: Alignment.center,
-      child: Icon(Icons.image_outlined, color: Colors.grey.shade500, size: width * 0.28),
+      child: Icon(
+        Icons.image_outlined,
+        color: Colors.grey.shade500,
+        size: iconSize,
+      ),
     );
   }
 

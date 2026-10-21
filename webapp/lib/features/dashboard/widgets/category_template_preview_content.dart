@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:webapp/features/templates/preview/template_preview_image_resolver.dart';
 import 'package:webapp/features/templates/preview/website_preview_renderer.dart';
 import 'package:webapp/features/website/domain/entities/website_document.dart';
 
@@ -17,8 +18,10 @@ class CategoryTemplatePreviewContent extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final previewDocument =
+        TemplatePreviewImageResolver.documentWithPreviewImages(document);
     return WebsitePreviewRenderer(
-      document: document,
+      document: previewDocument,
       compact: compact,
       mobileProfileLayout: mobileProfileLayout,
     );

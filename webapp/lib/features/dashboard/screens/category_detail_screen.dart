@@ -38,15 +38,30 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
   _PreviewMode? _selectedMode;
   bool _isDetailPanelExpanded = true;
   late WebsiteDocument _selectedDocument;
-  late List<WebsiteDocument> _templates;
+  late List<TemplateDefinition> _templateDefinitions;
+  late int _selectedTemplateType;
 
   @override
   void initState() {
     super.initState();
-    _templates = CategoryTemplatesData.byCategoryType(widget.categoryType);
-    _selectedDocument = widget.initialDocument ??
-        _templates.firstOrNull ??
-        CategoryTemplatesData.byType(widget.categoryType)!;
+    _templateDefinitions = CategoryTemplatesData.templatesForCategory(widget.categoryType);
+    if (widget.initialDocument != null) {
+      _selectedDocument = widget.initialDocument!;
+      _selectedTemplateType = _selectedDocument.templateType;
+    } else {
+      final first = _templateDefinitions.firstOrNull;
+      _selectedTemplateType = first?.templateType ?? 1;
+      _selectedDocument = first?.toDocument() ??
+          CategoryTemplatesData.byType(widget.categoryType)!;
+    }
+  }
+
+  void _selectTemplate(TemplateDefinition definition) {
+    if (definition.templateType == _selectedTemplateType) return;
+    setState(() {
+      _selectedTemplateType = definition.templateType;
+      _selectedDocument = definition.toDocument();
+    });
   }
 
   _PreviewMode _defaultMode(BuildContext context) {
@@ -89,13 +104,14 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
         ),
     };
 
-    return _FittedDevicePreview(
-      key: ValueKey('${mode.name}_${_selectedDocument.templateType}'),
-      maxWidth: constraints.maxWidth,
-      maxHeight: constraints.maxHeight,
-      fitWidth: fitWidth,
-      fitHeight: fitHeight,
-      child: frame,
+    return RepaintBoundary(
+      child: _FittedDevicePreview(
+        maxWidth: constraints.maxWidth,
+        maxHeight: constraints.maxHeight,
+        fitWidth: fitWidth,
+        fitHeight: fitHeight,
+        child: frame,
+      ),
     );
   }
 
@@ -141,28 +157,18 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
             final previewSection = _DevicePreviewSection(
               selectedMode: selectedMode,
               onModeChanged: (mode) => setState(() => _selectedMode = mode),
-              previewBuilder: (previewConstraints) => AnimatedSwitcher(
-                duration: const Duration(milliseconds: 250),
-                layoutBuilder: (currentChild, previousChildren) {
-                  return Stack(
-                    clipBehavior: Clip.none,
-                    alignment: Alignment.center,
-                    children: [
-                      ...previousChildren,
-                      ?currentChild,
-                    ],
-                  );
-                },
-                child: _buildPreview(selectedMode, previewConstraints),
+              previewBuilder: (previewConstraints) => _ExclusivePreviewPane(
+                key: ValueKey(
+                  '${selectedMode.name}_$_selectedTemplateType',
+                ),
+                builder: (_) => _buildPreview(selectedMode, previewConstraints),
               ),
             );
 
             final detailPanel = _CategoryDetailPanel(
-              templates: _templates,
-              selectedDocument: _selectedDocument,
-              onTemplateSelected: (document) {
-                setState(() => _selectedDocument = document);
-              },
+              templateDefinitions: _templateDefinitions,
+              selectedTemplateType: _selectedTemplateType,
+              onTemplateSelected: _selectTemplate,
               isBottomSheet: isPortraitLayout,
               isExpanded: _isDetailPanelExpanded,
               onToggle: isPortraitLayout
@@ -268,17 +274,17 @@ class _DevicePreviewSection extends StatelessWidget {
 
 class _CategoryDetailPanel extends StatelessWidget {
   const _CategoryDetailPanel({
-    required this.templates,
-    required this.selectedDocument,
+    required this.templateDefinitions,
+    required this.selectedTemplateType,
     required this.onTemplateSelected,
     required this.isBottomSheet,
     required this.isExpanded,
     this.onToggle,
   });
 
-  final List<WebsiteDocument> templates;
-  final WebsiteDocument selectedDocument;
-  final ValueChanged<WebsiteDocument> onTemplateSelected;
+  final List<TemplateDefinition> templateDefinitions;
+  final int selectedTemplateType;
+  final ValueChanged<TemplateDefinition> onTemplateSelected;
   final bool isBottomSheet;
   final bool isExpanded;
   final VoidCallback? onToggle;
@@ -319,8 +325,8 @@ class _CategoryDetailPanel extends StatelessWidget {
             child: IgnorePointer(
               ignoring: isBottomSheet && !isExpanded,
               child: TemplateSelectionPanel(
-                templates: templates,
-                selected: selectedDocument,
+                templates: templateDefinitions,
+                selectedTemplateType: selectedTemplateType,
                 onSelected: onTemplateSelected,
                 isMobileLayout: isBottomSheet,
               ),
@@ -442,9 +448,63 @@ class _SegmentIcon extends StatelessWidget {
   }
 }
 
+/// Mounts a single heavy preview; disposes the previous tree before building the next.
+class _ExclusivePreviewPane extends StatefulWidget {
+  const _ExclusivePreviewPane({
+    super.key,
+    required this.builder,
+  });
+
+  final WidgetBuilder builder;
+
+  @override
+  State<_ExclusivePreviewPane> createState() => _ExclusivePreviewPaneState();
+}
+
+class _ExclusivePreviewPaneState extends State<_ExclusivePreviewPane> {
+  Widget? _preview;
+  int _loadGeneration = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _schedulePreviewBuild();
+  }
+
+  @override
+  void didUpdateWidget(covariant _ExclusivePreviewPane oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.key != oldWidget.key) {
+      _preview = null;
+      _schedulePreviewBuild();
+    }
+  }
+
+  void _schedulePreviewBuild() {
+    final generation = ++_loadGeneration;
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted || generation != _loadGeneration) return;
+      setState(() => _preview = widget.builder(context));
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (_preview == null) {
+      return const Center(
+        child: SizedBox(
+          width: 28,
+          height: 28,
+          child: CircularProgressIndicator(strokeWidth: 2),
+        ),
+      );
+    }
+    return _preview!;
+  }
+}
+
 class _FittedDevicePreview extends StatelessWidget {
   const _FittedDevicePreview({
-    super.key,
     required this.child,
     required this.maxWidth,
     required this.maxHeight,

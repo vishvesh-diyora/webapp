@@ -18,6 +18,22 @@ class WebApp extends StatelessWidget {
         title: AppConfig.appName,
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light,
+        builder: (context, child) {
+          final mediaQuery = MediaQuery.of(context);
+          TextScaler scaler;
+          try {
+            scaler = mediaQuery.textScaler.clamp(
+              minScaleFactor: 0.85,
+              maxScaleFactor: 1.35,
+            );
+          } catch (_) {
+            scaler = TextScaler.noScaling;
+          }
+          return MediaQuery(
+            data: mediaQuery.copyWith(textScaler: scaler),
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
         home: const _AppEntry(),
       ),
     );

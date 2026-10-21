@@ -19,8 +19,6 @@ class SiteNavBar extends StatelessWidget {
   final bool mobileLayout;
   final String? logo;
 
-  static const _links = ['Home', 'About', 'Work', 'Contact'];
-
   @override
   Widget build(BuildContext context) {
     return switch (theme.navStyle) {
@@ -55,13 +53,6 @@ class SiteNavBar extends StatelessWidget {
             SizedBox(width: compact ? 8 : 10),
           ],
           Expanded(child: Text(title, style: theme.heading(compact, size: 16))),
-          if (!mobileLayout) ...[
-            for (final link in _links)
-              Padding(
-                padding: EdgeInsets.only(left: compact ? 10 : 14),
-                child: Text(link, style: theme.body(compact, size: 12)),
-              ),
-          ],
         ],
       ),
     );
@@ -78,11 +69,6 @@ class SiteNavBar extends StatelessWidget {
         children: [
           Icon(Icons.home_outlined, color: theme.accent, size: compact ? 20 : 22),
           const Spacer(),
-          for (final _ in _links)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 16),
-              child: Container(width: 6, height: 6, decoration: BoxDecoration(color: theme.accent, shape: BoxShape.circle)),
-            ),
         ],
       ),
     );
@@ -92,10 +78,7 @@ class SiteNavBar extends StatelessWidget {
     return Container(
       padding: EdgeInsets.symmetric(vertical: compact ? 8 : 10),
       decoration: BoxDecoration(color: theme.surface, border: Border(top: BorderSide(color: theme.text.withValues(alpha: 0.1)))),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-        children: [for (final _ in _links.take(4)) Icon(Icons.circle_outlined, size: compact ? 18 : 20, color: theme.primary)],
-      ),
+      child: SizedBox(height: compact ? 4 : 6),
     );
   }
 
@@ -106,49 +89,27 @@ class SiteNavBar extends StatelessWidget {
         child: Container(
           padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 16, vertical: compact ? 8 : 10),
           decoration: BoxDecoration(color: theme.primary.withValues(alpha: 0.12), borderRadius: BorderRadius.circular(999)),
-          child: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              for (var i = 0; i < _links.length; i++)
-                Padding(
-                  padding: EdgeInsets.symmetric(horizontal: compact ? 6 : 8),
-                  child: Text(_links[i], style: theme.body(compact, size: 11).copyWith(color: i == 0 ? theme.primary : null, fontWeight: i == 0 ? FontWeight.w700 : null)),
-                ),
-            ],
-          ),
+          child: Text(title, style: theme.body(compact, size: 12).copyWith(color: theme.primary, fontWeight: FontWeight.w700)),
         ),
       ),
     );
   }
 
   Widget _underline() {
-    return Column(
-      children: [
-        Padding(
-          padding: EdgeInsets.fromLTRB(compact ? 12 : 16, compact ? 10 : 12, compact ? 12 : 16, 0),
-          child: Row(
-            children: [
-              Expanded(child: Text(title, style: theme.heading(compact, size: 18))),
-            ],
+    return Padding(
+      padding: EdgeInsets.fromLTRB(compact ? 12 : 16, compact ? 10 : 12, compact ? 12 : 16, compact ? 10 : 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: theme.heading(compact, size: 18)),
+          Container(
+            height: 2,
+            width: 48,
+            margin: EdgeInsets.only(top: compact ? 8 : 10),
+            color: theme.primary,
           ),
-        ),
-        SizedBox(
-          height: compact ? 36 : 40,
-          child: ListView.separated(
-            scrollDirection: Axis.horizontal,
-            padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 16),
-            itemCount: _links.length,
-            separatorBuilder: (_, __) => SizedBox(width: compact ? 16 : 20),
-            itemBuilder: (context, i) => Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                Text(_links[i], style: theme.body(compact, size: 12)),
-                Container(height: 2, width: 32, margin: const EdgeInsets.only(top: 6), color: i == 0 ? theme.primary : Colors.transparent),
-              ],
-            ),
-          ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
@@ -207,21 +168,9 @@ class SiteNavBar extends StatelessWidget {
   Widget _tabs() {
     return Container(
       color: theme.surface,
-      child: Row(
-        children: [
-          for (var i = 0; i < 3; i++)
-            Expanded(
-              child: Container(
-                padding: EdgeInsets.symmetric(vertical: compact ? 10 : 12),
-                decoration: BoxDecoration(
-                  border: Border(bottom: BorderSide(color: i == 0 ? theme.primary : Colors.transparent, width: 2)),
-                ),
-                alignment: Alignment.center,
-                child: Text(_links[i], style: theme.body(compact, size: 11)),
-              ),
-            ),
-        ],
-      ),
+      padding: EdgeInsets.symmetric(horizontal: compact ? 12 : 16, vertical: compact ? 10 : 12),
+      alignment: Alignment.centerLeft,
+      child: Text(title, style: theme.heading(compact, size: 16)),
     );
   }
 
@@ -229,24 +178,11 @@ class SiteNavBar extends StatelessWidget {
     return Padding(
       padding: EdgeInsets.all(compact ? 10 : 12),
       child: Container(
-        padding: const EdgeInsets.all(4),
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(vertical: compact ? 8 : 10, horizontal: compact ? 12 : 14),
         decoration: BoxDecoration(color: theme.surface, borderRadius: BorderRadius.circular(theme.radius)),
-        child: Row(
-          children: [
-            for (var i = 0; i < 3; i++)
-              Expanded(
-                child: Container(
-                  padding: EdgeInsets.symmetric(vertical: compact ? 8 : 10),
-                  decoration: BoxDecoration(
-                    color: i == 0 ? theme.primary : Colors.transparent,
-                    borderRadius: BorderRadius.circular(theme.radius * 0.7),
-                  ),
-                  alignment: Alignment.center,
-                  child: Text(_links[i], style: theme.body(compact, size: 10).copyWith(color: i == 0 ? Colors.white : null)),
-                ),
-              ),
-          ],
-        ),
+        alignment: Alignment.centerLeft,
+        child: Text(title, style: theme.heading(compact, size: 14)),
       ),
     );
   }
@@ -262,8 +198,7 @@ class SiteNavBar extends StatelessWidget {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(title, style: theme.heading(compact, size: 14)),
-          Row(children: [for (final icon in [Icons.home_outlined, Icons.search, Icons.person_outline]) Icon(icon, size: compact ? 18 : 20, color: theme.primary)]),
+          Expanded(child: Text(title, style: theme.heading(compact, size: 14))),
         ],
       ),
     );
@@ -277,7 +212,6 @@ class SiteNavBar extends StatelessWidget {
       child: Row(
         children: [
           Expanded(child: Text(title, style: theme.heading(compact, size: 22))),
-          if (!mobileLayout) Text('Explore', style: theme.body(compact).copyWith(color: theme.primary)),
         ],
       ),
     );

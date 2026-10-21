@@ -30,15 +30,22 @@ class SiteImage extends StatelessWidget {
     0, 0, 0, 1, 0,
   ]);
 
+  double _effectiveWidth() {
+    if (width.isFinite && width > 0) return width;
+    if (height.isFinite && height > 0) return height;
+    return 48;
+  }
+
   @override
   Widget build(BuildContext context) {
+    final resolvedWidth = _effectiveWidth();
     Widget image = ImageAssetService.buildImage(
       path: path,
       width: width,
       height: height,
       fit: fit,
       borderRadius: shape == ProfileImageShape.circle
-          ? BorderRadius.circular(width / 2)
+          ? BorderRadius.circular(resolvedWidth / 2)
           : (borderRadius != null ? BorderRadius.circular(borderRadius!) : null),
     );
 

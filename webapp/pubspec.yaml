@@ -26,6 +26,7 @@ dependencies:
   blake3_dart: ^1.0.0
   mime: ^2.0.0
   flutter_dotenv: ^5.2.1
+  google_fonts: ^8.2.1
 
 dev_dependencies:
   flutter_test:

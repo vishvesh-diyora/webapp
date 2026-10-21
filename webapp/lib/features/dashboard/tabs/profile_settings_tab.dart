@@ -119,6 +119,7 @@ class _ProfileSettingsTabState extends State<ProfileSettingsTab> {
         final isLoggedIn = user != null;
 
         return SafeArea(
+          bottom: false,
           child: ListView(
             padding: const EdgeInsets.all(20),
             children: [
@@ -369,13 +370,17 @@ class _SettingsSection extends StatelessWidget {
             ),
           ),
         ),
-        Container(
-          decoration: BoxDecoration(
-            color: Colors.white,
+        Material(
+          color: Colors.white,
+          clipBehavior: Clip.antiAlias,
+          shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            side: const BorderSide(color: Color(0xFFE2E8F0)),
           ),
-          child: Column(children: children),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: children,
+          ),
         ),
       ],
     );
@@ -400,6 +405,9 @@ class _SettingsTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
+      tileColor: Colors.white,
+      splashColor: const Color(0xFF6366F1).withValues(alpha: 0.08),
+      hoverColor: const Color(0xFF6366F1).withValues(alpha: 0.04),
       leading: Icon(icon, color: const Color(0xFF64748B)),
       title: Text(
         title,

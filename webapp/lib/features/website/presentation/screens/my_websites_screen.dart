@@ -45,14 +45,7 @@ class MyWebsitesScreen extends StatelessWidget {
     }
     if (state is MyWebsitesReady) {
       if (state.websites.isEmpty) {
-        return ListView(
-          children: const [
-            SizedBox(height: 180),
-            Icon(Icons.web_asset_off_outlined, size: 48, color: Color(0xFF94A3B8)),
-            SizedBox(height: 12),
-            Text('No websites yet', textAlign: TextAlign.center),
-          ],
-        );
+        return const _EmptyWebsitesPlaceholder();
       }
       return ListView.separated(
         padding: const EdgeInsets.all(16),
@@ -62,6 +55,109 @@ class MyWebsitesScreen extends StatelessWidget {
       );
     }
     return const SizedBox.shrink();
+  }
+}
+
+class _EmptyWebsitesPlaceholder extends StatelessWidget {
+  const _EmptyWebsitesPlaceholder();
+
+  @override
+  Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              minHeight: constraints.maxHeight,
+              minWidth: constraints.maxWidth,
+            ),
+            child: Center(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 32),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 168,
+                      height: 168,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(40),
+                        gradient: const LinearGradient(
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                          colors: [
+                            Color(0xFF6366F1),
+                            Color(0xFFA855F7),
+                            Color(0xFF0EA5E9),
+                          ],
+                          stops: [0.0, 0.45, 1.0],
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF6366F1).withValues(alpha: 0.35),
+                            blurRadius: 28,
+                            offset: const Offset(0, 14),
+                          ),
+                          BoxShadow(
+                            color: const Color(0xFF0EA5E9).withValues(alpha: 0.2),
+                            blurRadius: 16,
+                            offset: const Offset(0, 6),
+                          ),
+                        ],
+                      ),
+                      child: Stack(
+                        alignment: Alignment.center,
+                        children: [
+                          Positioned(
+                            right: 18,
+                            top: 22,
+                            child: Icon(
+                              Icons.auto_awesome_rounded,
+                              size: 28,
+                              color: Colors.white.withValues(alpha: 0.45),
+                            ),
+                          ),
+                          Icon(
+                            Icons.language_rounded,
+                            size: 80,
+                            color: Colors.white.withValues(alpha: 0.95),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 28),
+                    Text(
+                      'No websites yet',
+                      textAlign: TextAlign.center,
+                      style: theme.textTheme.titleLarge?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        color: const Color(0xFF0F172A),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    ConstrainedBox(
+                      constraints: const BoxConstraints(maxWidth: 320),
+                      child: Text(
+                        'Create your first site from the Create tab, then it will show up here.',
+                        textAlign: TextAlign.center,
+                        style: theme.textTheme.bodyMedium?.copyWith(
+                          color: const Color(0xFF64748B),
+                          height: 1.45,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
   }
 }
 
