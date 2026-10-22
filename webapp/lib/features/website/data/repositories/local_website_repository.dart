@@ -2,8 +2,6 @@ import 'dart:convert';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
-import 'package:webapp/core/config/cloudflare_config.dart';
-import 'package:webapp/features/cloudflare/domain/entities/website_deployment_info.dart';
 import 'package:webapp/features/website/domain/entities/website_document.dart';
 import 'package:webapp/features/website/domain/repositories/website_repository.dart';
 
@@ -51,8 +49,7 @@ class LocalWebsiteRepository implements WebsiteRepository {
     final row = {
       'id': id,
       'updated_at': now.toIso8601String(),
-      'content': document.toPublishedJson(),
-      if (document.deployment != null) 'deployment': document.deployment!.toJson(),
+      'content': document.toStorageJson(),
     };
 
     final index = rows.indexWhere((r) => r['id'] == id);
@@ -73,58 +70,11 @@ class LocalWebsiteRepository implements WebsiteRepository {
     await _writeRows(rows);
   }
 
-  @override
-  Future<WebsiteDocument?> fetchPublishedByUsername(String username) async {
-    final normalized = normalizeUsername(username);
-    if (normalized.isEmpty) return null;
-
-    for (final row in _readRows()) {
-      final deploymentJson = row['deployment'];
-      if (deploymentJson is! Map) continue;
-      final deployment = WebsiteDeploymentInfo.fromJson(
-        Map<String, dynamic>.from(deploymentJson),
-      );
-      if (normalizeUsername(deployment.projectName) == normalized) {
-        return _fromRow(row);
-      }
-    }
-    return null;
-  }
-
-  @override
-  Future<bool> isPublishUsernameAvailable(
-    String username, {
-    String? excludeWebsiteId,
-  }) async {
-    final normalized = normalizeUsername(username);
-    for (final row in _readRows()) {
-      if (excludeWebsiteId != null && row['id'] == excludeWebsiteId) {
-        continue;
-      }
-      final deploymentJson = row['deployment'];
-      if (deploymentJson is! Map) continue;
-      final deployment = WebsiteDeploymentInfo.fromJson(
-        Map<String, dynamic>.from(deploymentJson),
-      );
-      if (normalizeUsername(deployment.projectName) == normalized) {
-        return false;
-      }
-    }
-    return true;
-  }
-
   WebsiteDocument _fromRow(Map<String, dynamic> row) {
     final content = Map<String, dynamic>.from(row['content'] as Map);
-    WebsiteDeploymentInfo? deployment;
-    if (row['deployment'] != null) {
-      deployment = WebsiteDeploymentInfo.fromJson(
-        Map<String, dynamic>.from(row['deployment'] as Map),
-      );
-    }
     return WebsiteDocument.fromJson(content).copyWith(
       id: row['id'] as String?,
       updatedAt: DateTime.tryParse(row['updated_at'] as String? ?? ''),
-      deployment: deployment,
     );
   }
 }

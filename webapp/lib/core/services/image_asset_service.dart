@@ -7,7 +7,7 @@ import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 import 'package:uuid/uuid.dart';
 
-/// Manages user images: pick, store locally, resolve for preview, copy on publish.
+/// Manages user images: pick, store locally, and resolve for preview.
 abstract final class ImageAssetService {
   static const _uuid = Uuid();
   static final _picker = ImagePicker();
@@ -148,35 +148,4 @@ abstract final class ImageAssetService {
     );
   }
 
-  static Future<void> copyDocumentImagesToPublishDir(
-    Map<String, dynamic> publishedJson,
-    String publishImagesDir,
-  ) async {
-    final dir = Directory(publishImagesDir);
-    if (!dir.existsSync()) await dir.create(recursive: true);
-    await _walkJson(publishedJson, (value) async {
-      if (value.startsWith('assets/images/')) {
-        final local = await resolveLocalFile(value);
-        if (local != null) {
-          await local.copy(p.join(publishImagesDir, p.basename(local.path)));
-        }
-      }
-    });
-  }
-
-  static Future<void> _walkJson(dynamic node, Future<void> Function(String) onPath) async {
-    if (node is Map) {
-      for (final value in node.values) {
-        if (value is String && value.startsWith('assets/images/')) {
-          await onPath(value);
-        } else {
-          await _walkJson(value, onPath);
-        }
-      }
-    } else if (node is List) {
-      for (final item in node) {
-        await _walkJson(item, onPath);
-      }
-    }
-  }
 }

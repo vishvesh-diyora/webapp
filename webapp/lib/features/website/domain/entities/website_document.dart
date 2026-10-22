@@ -1,7 +1,6 @@
 import 'package:equatable/equatable.dart';
-import 'package:webapp/features/cloudflare/domain/entities/website_deployment_info.dart';
 
-/// Unified website JSON model used by editor, preview, generator, and local storage.
+/// Unified website JSON model used by editor, preview, and local storage.
 class WebsiteDocument extends Equatable {
   const WebsiteDocument({
     required this.type,
@@ -12,13 +11,10 @@ class WebsiteDocument extends Equatable {
     this.logo = '',
     required this.data,
     this.id,
-    this.userId,
     this.updatedAt,
-    this.deployment,
   });
 
   final String? id;
-  final String? userId;
   final int type;
   final int templateType;
   final String name;
@@ -27,13 +23,11 @@ class WebsiteDocument extends Equatable {
   final String logo;
   final List<WebsiteContentBlock> data;
   final DateTime? updatedAt;
-  final WebsiteDeploymentInfo? deployment;
 
   factory WebsiteDocument.fromJson(Map<String, dynamic> json) {
     final rawData = json['data'];
     return WebsiteDocument(
       id: json['id'] as String?,
-      userId: json['userId'] as String?,
       type: (json['type'] as num?)?.toInt() ?? 0,
       templateType: (json['templateType'] as num?)?.toInt() ?? 0,
       name: json['name'] as String? ?? '',
@@ -49,17 +43,11 @@ class WebsiteDocument extends Equatable {
       updatedAt: json['updatedAt'] != null
           ? DateTime.tryParse(json['updatedAt'] as String)
           : null,
-      deployment: json['deployment'] != null
-          ? WebsiteDeploymentInfo.fromJson(
-              Map<String, dynamic>.from(json['deployment'] as Map),
-            )
-          : null,
     );
   }
 
   Map<String, dynamic> toJson() => {
         if (id != null) 'id': id,
-        if (userId != null) 'userId': userId,
         'type': type,
         'templateType': templateType,
         'name': name,
@@ -68,11 +56,10 @@ class WebsiteDocument extends Equatable {
         'logo': logo,
         'data': data.map((block) => block.toJson()).toList(),
         if (updatedAt != null) 'updatedAt': updatedAt!.toIso8601String(),
-        if (deployment != null) 'deployment': deployment!.toJson(),
       };
 
-  /// JSON written to published `content.json` (no auth metadata).
-  Map<String, dynamic> toPublishedJson() => {
+  /// JSON persisted in local storage (content only).
+  Map<String, dynamic> toStorageJson() => {
         'type': type,
         'templateType': templateType,
         'name': name,
@@ -84,7 +71,6 @@ class WebsiteDocument extends Equatable {
 
   WebsiteDocument copyWith({
     String? id,
-    String? userId,
     int? type,
     int? templateType,
     String? name,
@@ -93,11 +79,9 @@ class WebsiteDocument extends Equatable {
     String? logo,
     List<WebsiteContentBlock>? data,
     DateTime? updatedAt,
-    WebsiteDeploymentInfo? deployment,
   }) {
     return WebsiteDocument(
       id: id ?? this.id,
-      userId: userId ?? this.userId,
       type: type ?? this.type,
       templateType: templateType ?? this.templateType,
       name: name ?? this.name,
@@ -106,7 +90,6 @@ class WebsiteDocument extends Equatable {
       logo: logo ?? this.logo,
       data: data ?? this.data,
       updatedAt: updatedAt ?? this.updatedAt,
-      deployment: deployment ?? this.deployment,
     );
   }
 
@@ -181,7 +164,6 @@ class WebsiteDocument extends Equatable {
   @override
   List<Object?> get props => [
         id,
-        userId,
         type,
         templateType,
         name,
@@ -190,7 +172,6 @@ class WebsiteDocument extends Equatable {
         logo,
         data,
         updatedAt,
-        deployment,
       ];
 }
 

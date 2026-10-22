@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:webapp/core/config/app_config.dart';
 import 'package:webapp/core/constants/app_constants.dart';
 import 'package:webapp/core/utils/snackbar_utils.dart';
 
-/// Profile tab: app info and legal links (no cloud account).
+/// Profile tab: legal links and app info (no sign-in).
 class ProfileSettingsTab extends StatelessWidget {
   const ProfileSettingsTab({super.key});
 
@@ -30,55 +29,12 @@ class ProfileSettingsTab extends StatelessWidget {
                   color: const Color(0xFF0F172A),
                 ),
           ),
-          const SizedBox(height: 24),
-          Container(
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [Color(0xFF6366F1), Color(0xFF8B5CF6)],
-              ),
-              borderRadius: BorderRadius.circular(20),
-              boxShadow: [
-                BoxShadow(
-                  color: const Color(0xFF6366F1).withValues(alpha: 0.25),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
+          const SizedBox(height: 8),
+          Text(
+            'Your sites are saved on this device.',
+            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  color: const Color(0xFF64748B),
                 ),
-              ],
-            ),
-            child: Row(
-              children: [
-                CircleAvatar(
-                  radius: 32,
-                  backgroundColor: Colors.white.withValues(alpha: 0.2),
-                  child: const Icon(Icons.language_rounded, color: Colors.white, size: 32),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        AppConfig.appName,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w600,
-                          fontSize: 16,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        'Sites are saved on this device',
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.85),
-                          fontSize: 13,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
           ),
           const SizedBox(height: 24),
           _SettingsSection(

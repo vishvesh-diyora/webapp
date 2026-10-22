@@ -3,6 +3,14 @@ import 'package:webapp/features/website/domain/entities/website_document.dart';
 
 /// Builds default [contentData] maps per category and content type.
 abstract final class DefaultContentFactory {
+  /// Demo reel sources on menu/product rows (`videoUrl` drives the reels strip).
+  static const List<String> _catalogDemoProductVideoUrls = [
+    'https://drive.google.com/file/d/1-l6Duhu-4b0nbbLCZfg0wE_75FExPbwr/view?usp=drive_link',
+    'https://drive.google.com/file/d/1LQZz6pS85VcKItHBr0Euobq5mxqAJltw/view?usp=drive_link',
+    'https://drive.google.com/file/d/1K3-B5BEwXrxh4-brDQPs8QoRnrE--sGD/view?usp=drive_link',
+    'https://drive.google.com/file/d/1UMuafNfOqAqB65xYg8HCCQQyUypek1sO/view?usp=drive_link',
+  ];
+
   static List<WebsiteContentBlock> blocksForCategory(int type, int templateType) {
     return [
       WebsiteContentBlock(
@@ -248,19 +256,16 @@ abstract final class DefaultContentFactory {
         'tagline': 'Wood-fired flavors, modern comfort',
         'banners': [
           {
-            'title': 'Weekend Brunch',
-            'subtitle': 'Sat—Sun 9am—2pm',
-            'image': 'assets/images/banner-1.jpg',
+            'image':
+                'https://images.unsplash.com/photo-1414235077428-338989a2e8c0?w=1200&auto=format&fit=crop&q=80',
           },
           {
-            'title': 'Chef\'s Tasting Menu',
-            'subtitle': 'Seven courses · \$85',
-            'image': 'assets/images/banner-2.jpg',
+            'image':
+                'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=1200&auto=format&fit=crop&q=80',
           },
           {
-            'title': 'Happy Hour',
-            'subtitle': 'Mon—Fri 4pm—7pm',
-            'image': 'assets/images/banner-1.jpg',
+            'image':
+                'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=1200&auto=format&fit=crop&q=80',
           },
         ],
         'offers': [
@@ -276,15 +281,99 @@ abstract final class DefaultContentFactory {
           {'platform': 'Twitter', 'url': 'https://twitter.com', 'icon': 'twitter'},
           {'platform': 'LinkedIn', 'url': 'https://linkedin.com', 'icon': 'linkedin'},
         ],
+        'reels': [
+          {
+            'tag': '#ChefPick',
+            'videoUrl':
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+            'productName': 'Charred Octopus',
+          },
+          {
+            'tag': '#WoodFired',
+            'videoUrl':
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+            'productName': 'Oak-Fired Ribeye',
+          },
+          {
+            'tag': '#Fresh',
+            'videoUrl':
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+            'productName': 'Heirloom Tomato Salad',
+          },
+          {
+            'tag': '#Seafood',
+            'videoUrl':
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+            'productName': 'Pan-Seared Salmon',
+          },
+          {
+            'tag': '#Dessert',
+            'videoUrl':
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+            'productName': 'Burnt Basque Cheesecake',
+          },
+          {
+            'tag': '#Cocktails',
+            'videoUrl':
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4',
+            'productName': 'Smoked Old Fashioned',
+          },
+        ],
         'theme': _variantTheme(variant),
       };
 
   static Map<String, dynamic> _restaurantSecondary(int variant) => {
         'categories': [
-          {'name': 'Starters', 'icon': 'starters'},
-          {'name': 'Mains', 'icon': 'mains'},
-          {'name': 'Desserts', 'icon': 'desserts'},
-          {'name': 'Drinks', 'icon': 'drinks'},
+          {
+            'name': 'Starters',
+            'image':
+                'https://images.unsplash.com/photo-1544025162-d76694265947?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Mains',
+            'image':
+                'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Seafood',
+            'image':
+                'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Salads',
+            'image':
+                'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Wood-Fired',
+            'image':
+                'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Brunch',
+            'image':
+                'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Sides',
+            'image':
+                'https://images.unsplash.com/photo-1574481284752-6bfd47f21e4b?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Desserts',
+            'image':
+                'https://images.unsplash.com/photo-1565958011703-44f9824ba1cd?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Drinks',
+            'image':
+                'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Kids',
+            'image':
+                'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=400&auto=format&fit=crop&q=80',
+          },
         ],
         'theme': _variantTheme(variant),
       };
@@ -297,19 +386,88 @@ abstract final class DefaultContentFactory {
             'price': 20,
             'discount': 10,
             'description': 'Smoked paprika, lemon oil, herbs',
-            'image': 'assets/images/menu-1.jpg',
+            'image':
+                'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1559339352-11d035aa65de?w=800&auto=format&fit=crop&q=80',
+            ],
             'spicy': false,
             'bestSeller': true,
+            'videoUrl': _catalogDemoProductVideoUrls[0],
+          },
+          {
+            'name': 'Crispy Calamari',
+            'category': 'Starters',
+            'price': 16,
+            'discount': 8,
+            'description': 'Lemon aioli, pickled peppers',
+            'image':
+                'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1599487488170-d11ec9c172f0?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=800&auto=format&fit=crop&q=80',
+            ],
+            'spicy': false,
+          },
+          {
+            'name': 'Heirloom Tomato Salad',
+            'category': 'Salads',
+            'price': 14,
+            'discount': 0,
+            'description': 'Burrata, basil oil, aged balsamic',
+            'image':
+                'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=800&auto=format&fit=crop&q=80',
+            ],
+            'spicy': false,
+            'bestSeller': true,
+            'videoUrl': _catalogDemoProductVideoUrls[2],
           },
           {
             'name': 'Oak-Fired Ribeye',
-            'category': 'Mains',
+            'category': 'Wood-Fired',
             'price': 48,
             'discount': 12,
             'description': 'Garlic butter, roasted roots',
-            'image': 'assets/images/menu-2.jpg',
+            'image':
+                'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1546833999-b9f581a1996d?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1600891964092-4316c288032e?w=800&auto=format&fit=crop&q=80',
+            ],
             'spicy': false,
             'bestSeller': true,
+            'videoUrl': _catalogDemoProductVideoUrls[1],
+          },
+          {
+            'name': 'Pan-Seared Salmon',
+            'category': 'Seafood',
+            'price': 34,
+            'discount': 10,
+            'description': 'Citrus beurre blanc, asparagus',
+            'image':
+                'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=800&auto=format&fit=crop&q=80',
+            ],
+            'spicy': false,
+            'videoUrl': _catalogDemoProductVideoUrls[3],
+          },
+          {
+            'name': 'Wild Mushroom Risotto',
+            'category': 'Mains',
+            'price': 28,
+            'discount': 5,
+            'description': 'Porcini, parmesan, truffle finish',
+            'image':
+                'https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1476124369491-e7addf5db371?w=800&auto=format&fit=crop&q=80',
+            ],
+            'spicy': false,
           },
           {
             'name': 'Burnt Basque Cheesecake',
@@ -317,7 +475,172 @@ abstract final class DefaultContentFactory {
             'price': 14,
             'discount': 14,
             'description': 'Seasonal berry compote',
-            'image': 'assets/images/menu-3.jpg',
+            'image':
+                'https://images.unsplash.com/photo-1565958011703-44f9824ba1cd?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1565958011703-44f9824ba1cd?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1624353365286-3f8ed62f2f1a?w=800&auto=format&fit=crop&q=80',
+            ],
+            'spicy': false,
+            'bestSeller': true,
+            'videoUrl': _catalogDemoProductVideoUrls[0],
+          },
+          {
+            'name': 'Dark Chocolate Tart',
+            'category': 'Desserts',
+            'price': 12,
+            'discount': 0,
+            'description': 'Sea salt, cocoa nib crumble',
+            'image':
+                'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1606313564200-e75d5e30476c?w=800&auto=format&fit=crop&q=80',
+            ],
+            'spicy': false,
+          },
+          {
+            'name': 'Smoked Old Fashioned',
+            'category': 'Drinks',
+            'price': 16,
+            'discount': 0,
+            'description': 'Bourbon, bitters, orange peel',
+            'image':
+                'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1514362545857-3bc16c4c7d1b?w=800&auto=format&fit=crop&q=80',
+            ],
+            'spicy': false,
+            'videoUrl': _catalogDemoProductVideoUrls[1],
+          },
+          {
+            'name': 'Sparkling Yuzu Spritz',
+            'category': 'Drinks',
+            'price': 13,
+            'discount': 0,
+            'description': 'Yuzu, prosecco, mint',
+            'image':
+                'https://images.unsplash.com/photo-1546171753-97d7676e4602?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1546171753-97d7676e4602?w=800&auto=format&fit=crop&q=80',
+            ],
+            'spicy': false,
+          },
+          {
+            'name': 'Cold Brew Tonic',
+            'category': 'Drinks',
+            'price': 7,
+            'discount': 0,
+            'description': 'House cold brew, tonic, citrus',
+            'image':
+                'https://images.unsplash.com/photo-1497935586351-b67a8e006c44?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1497935586351-b67a8e006c44?w=800&auto=format&fit=crop&q=80',
+            ],
+            'spicy': false,
+          },
+          {
+            'name': 'Shakshuka Brunch Plate',
+            'category': 'Brunch',
+            'price': 18,
+            'discount': 5,
+            'description': 'Eggs, spiced tomato stew, grilled bread',
+            'image':
+                'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1525351484163-7529414344d8?w=800&auto=format&fit=crop&q=80',
+            ],
+            'spicy': false,
+            'bestSeller': true,
+          },
+          {
+            'name': 'Avocado Toast',
+            'category': 'Brunch',
+            'price': 15,
+            'discount': 0,
+            'description': 'Sourdough, chili flakes, microgreens',
+            'image':
+                'https://images.unsplash.com/photo-1541519227359-08d847fca6af?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1541519227359-08d847fca6af?w=800&auto=format&fit=crop&q=80',
+            ],
+            'spicy': false,
+          },
+          {
+            'name': 'Herb-Crusted Lamb Chops',
+            'category': 'Mains',
+            'price': 42,
+            'discount': 8,
+            'description': 'Mint gremolata, charred lemon',
+            'image':
+                'https://images.unsplash.com/photo-1600891964595-f61ba98e256f?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1600891964595-f61ba98e256f?w=800&auto=format&fit=crop&q=80',
+            ],
+            'spicy': false,
+          },
+          {
+            'name': 'Truffle Parmesan Fries',
+            'category': 'Sides',
+            'price': 11,
+            'discount': 0,
+            'description': 'Hand-cut, truffle oil, parmesan',
+            'image':
+                'https://images.unsplash.com/photo-1574481284752-6bfd47f21e4b?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1574481284752-6bfd47f21e4b?w=800&auto=format&fit=crop&q=80',
+            ],
+            'spicy': false,
+          },
+          {
+            'name': 'Wood-Fired Margherita',
+            'category': 'Wood-Fired',
+            'price': 19,
+            'discount': 0,
+            'description': 'San Marzano, fresh mozzarella, basil',
+            'image':
+                'https://images.unsplash.com/photo-1574071318508-1cdbab80b002?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1574071318508-1cdbab80b002?w=800&auto=format&fit=crop&q=80',
+            ],
+            'spicy': false,
+          },
+          {
+            'name': 'Grilled Fish Tacos',
+            'category': 'Seafood',
+            'price': 17,
+            'discount': 0,
+            'description': 'Slaw, lime crema, corn tortillas',
+            'image':
+                'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=800&auto=format&fit=crop&q=80',
+            ],
+            'spicy': false,
+          },
+          {
+            'name': 'Kids Mac & Cheese',
+            'category': 'Kids',
+            'price': 10,
+            'discount': 0,
+            'description': 'Three-cheese blend, buttered broccoli',
+            'image':
+                'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=800&auto=format&fit=crop&q=80',
+            ],
+            'spicy': false,
+          },
+          {
+            'name': 'Mini Chicken Sliders',
+            'category': 'Kids',
+            'price': 12,
+            'discount': 0,
+            'description': 'Two sliders, apple slices',
+            'image':
+                'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?w=800&auto=format&fit=crop&q=80',
+            ],
             'spicy': false,
           },
         ],
@@ -329,19 +652,16 @@ abstract final class DefaultContentFactory {
         'tagline': 'Curated furniture & decor',
         'banners': [
           {
-            'title': 'Spring Collection',
-            'subtitle': 'Fresh textures for modern living',
-            'image': 'assets/images/banner-1.jpg',
+            'image':
+                'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=1200&auto=format&fit=crop&q=80',
           },
           {
-            'title': 'Bedroom Refresh',
-            'subtitle': 'Calm tones & soft linens',
-            'image': 'assets/images/banner-2.jpg',
+            'image':
+                'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=1200&auto=format&fit=crop&q=80',
           },
           {
-            'title': 'Kitchen Essentials',
-            'subtitle': 'Handpicked tools & serveware',
-            'image': 'assets/images/banner-1.jpg',
+            'image':
+                'https://images.unsplash.com/photo-1556911220-bff31c812dba?w=1200&auto=format&fit=crop&q=80',
           },
         ],
         'email': 'hello@atelierhome.com',
@@ -354,14 +674,99 @@ abstract final class DefaultContentFactory {
           {'platform': 'Twitter', 'url': 'https://twitter.com', 'icon': 'twitter'},
           {'platform': 'LinkedIn', 'url': 'https://linkedin.com', 'icon': 'linkedin'},
         ],
+        'reels': [
+          {
+            'tag': '#Living',
+            'videoUrl':
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
+            'productName': 'Linen Lounge Chair',
+          },
+          {
+            'tag': '#Ambient',
+            'videoUrl':
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
+            'productName': 'Ceramic Table Lamp',
+          },
+          {
+            'tag': '#Storage',
+            'videoUrl':
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
+            'productName': 'Walnut Sideboard',
+          },
+          {
+            'tag': '#Cozy',
+            'videoUrl':
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
+            'productName': 'Wool Throw Blanket',
+          },
+          {
+            'tag': '#Bedroom',
+            'videoUrl':
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
+            'productName': 'Linen Duvet Set',
+          },
+          {
+            'tag': '#Kitchen',
+            'videoUrl':
+                'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4',
+            'productName': 'Copper Pour-Over Kettle',
+          },
+        ],
         'theme': _variantTheme(variant),
       };
 
   static Map<String, dynamic> _ecommerceSecondary(int variant) => {
         'categories': [
-          {'name': 'Living Room', 'image': 'assets/images/cat-1.jpg'},
-          {'name': 'Bedroom', 'image': 'assets/images/cat-2.jpg'},
-          {'name': 'Kitchen', 'image': 'assets/images/cat-3.jpg'},
+          {
+            'name': 'Living Room',
+            'image':
+                'https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Bedroom',
+            'image':
+                'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Kitchen',
+            'image':
+                'https://images.unsplash.com/photo-1556911220-bff31c812dba?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Bathroom',
+            'image':
+                'https://images.unsplash.com/photo-1620626011761-996317b8d101?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Home Office',
+            'image':
+                'https://images.unsplash.com/photo-1593062096033-9a26b09da705?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Outdoor',
+            'image':
+                'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Lighting',
+            'image':
+                'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Decor',
+            'image':
+                'https://images.unsplash.com/photo-1615529328331-f8917597711f?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Rugs',
+            'image':
+                'https://images.unsplash.com/photo-1600166898308-ae3035186d3f?w=400&auto=format&fit=crop&q=80',
+          },
+          {
+            'name': 'Storage',
+            'image':
+                'https://images.unsplash.com/photo-1594620302200-9a762244a156?w=400&auto=format&fit=crop&q=80',
+          },
         ],
         'theme': _variantTheme(variant),
       };
@@ -373,26 +778,233 @@ abstract final class DefaultContentFactory {
             'category': 'Living Room',
             'price': 349,
             'discount': 15,
-            'image': 'assets/images/product-1.jpg',
+            'image':
+                'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1493663284031-d7a0f88256e1?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop&q=80',
+            ],
             'description': 'Solid oak frame with breathable linen upholstery.',
             'bestSeller': true,
+            'videoUrl': _catalogDemoProductVideoUrls[0],
           },
           {
             'name': 'Ceramic Table Lamp',
             'category': 'Living Room',
             'price': 99,
             'discount': 10,
-            'image': 'assets/images/product-2.jpg',
+            'image':
+                'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=800&auto=format&fit=crop&q=80',
+            ],
             'description': 'Hand-glazed ceramic base with warm ambient glow.',
             'bestSeller': true,
+            'videoUrl': _catalogDemoProductVideoUrls[1],
           },
           {
             'name': 'Walnut Sideboard',
             'category': 'Living Room',
             'price': 799,
             'discount': 10,
-            'image': 'assets/images/product-3.jpg',
+            'image':
+                'https://images.unsplash.com/photo-1594620302200-9a762244a156?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1594620302200-9a762244a156?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1615529328331-f8917597711f?w=800&auto=format&fit=crop&q=80',
+            ],
             'description': 'Minimal storage with soft-close drawers.',
+            'videoUrl': _catalogDemoProductVideoUrls[2],
+          },
+          {
+            'name': 'Wool Throw Blanket',
+            'category': 'Living Room',
+            'price': 129,
+            'discount': 8,
+            'image':
+                'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=800&auto=format&fit=crop&q=80',
+            ],
+            'description': 'Merino wool blend in neutral earth tones.',
+            'bestSeller': true,
+            'videoUrl': _catalogDemoProductVideoUrls[3],
+          },
+          {
+            'name': 'Linen Duvet Set',
+            'category': 'Bedroom',
+            'price': 189,
+            'discount': 12,
+            'image':
+                'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1631049307264-da0ec9d70304?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1616594039964-ae9021a400a0?w=800&auto=format&fit=crop&q=80',
+            ],
+            'description': 'Stone-washed linen, envelope closure.',
+            'videoUrl': _catalogDemoProductVideoUrls[0],
+          },
+          {
+            'name': 'Oak Nightstand',
+            'category': 'Bedroom',
+            'price': 249,
+            'discount': 5,
+            'image':
+                'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?w=800&auto=format&fit=crop&q=80',
+            ],
+            'description': 'Single drawer, soft-close hardware.',
+          },
+          {
+            'name': 'Stoneware Dinner Set',
+            'category': 'Kitchen',
+            'price': 89,
+            'discount': 0,
+            'image':
+                'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1556911220-bff31c812dba?w=800&auto=format&fit=crop&q=80',
+            ],
+            'description': '16-piece set, dishwasher safe glaze.',
+            'bestSeller': true,
+          },
+          {
+            'name': 'Copper Pour-Over Kettle',
+            'category': 'Kitchen',
+            'price': 74,
+            'discount': 10,
+            'image':
+                'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1517668808822-9ebb02f2a0e6?w=800&auto=format&fit=crop&q=80',
+            ],
+            'description': 'Gooseneck spout for precision pours.',
+            'videoUrl': _catalogDemoProductVideoUrls[2],
+          },
+          {
+            'name': 'Marble Serving Board',
+            'category': 'Kitchen',
+            'price': 58,
+            'discount': 0,
+            'image':
+                'https://images.unsplash.com/photo-1600489000022-0f9a8e3c6f37?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1600489000022-0f9a8e3c6f37?w=800&auto=format&fit=crop&q=80',
+            ],
+            'description': 'Polished marble with leather handles.',
+          },
+          {
+            'name': 'Rattan Pendant Light',
+            'category': 'Lighting',
+            'price': 165,
+            'discount': 15,
+            'image':
+                'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1513506003901-1e6a229e2d15?w=800&auto=format&fit=crop&q=80',
+            ],
+            'description': 'Natural weave shade, warm diffused light.',
+          },
+          {
+            'name': 'Organic Cotton Towel Set',
+            'category': 'Bathroom',
+            'price': 79,
+            'discount': 10,
+            'image':
+                'https://images.unsplash.com/photo-1620626011761-996317b8d101?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1620626011761-996317b8d101?w=800&auto=format&fit=crop&q=80',
+            ],
+            'description': 'Six-piece set, ultra-soft 600 GSM.',
+          },
+          {
+            'name': 'Ergonomic Desk Chair',
+            'category': 'Home Office',
+            'price': 429,
+            'discount': 12,
+            'image':
+                'https://images.unsplash.com/photo-1593062096033-9a26b09da705?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1593062096033-9a26b09da705?w=800&auto=format&fit=crop&q=80',
+            ],
+            'description': 'Lumbar support, breathable mesh back.',
+            'bestSeller': true,
+          },
+          {
+            'name': 'Teak Bistro Set',
+            'category': 'Outdoor',
+            'price': 599,
+            'discount': 8,
+            'image':
+                'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?w=800&auto=format&fit=crop&q=80',
+            ],
+            'description': 'Table and two chairs, weather-resistant finish.',
+          },
+          {
+            'name': 'Arc Floor Lamp',
+            'category': 'Lighting',
+            'price': 219,
+            'discount': 0,
+            'image':
+                'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1507473885765-e6ed057f782c?w=800&auto=format&fit=crop&q=80',
+            ],
+            'description': 'Brushed steel arc with linen drum shade.',
+          },
+          {
+            'name': 'Hand-Thrown Ceramic Vase',
+            'category': 'Decor',
+            'price': 68,
+            'discount': 0,
+            'image':
+                'https://images.unsplash.com/photo-1615529328331-f8917597711f?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1615529328331-f8917597711f?w=800&auto=format&fit=crop&q=80',
+            ],
+            'description': 'Matte glaze, artisan studio collection.',
+          },
+          {
+            'name': 'Jute Area Rug',
+            'category': 'Rugs',
+            'price': 199,
+            'discount': 15,
+            'image':
+                'https://images.unsplash.com/photo-1600166898308-ae3035186d3f?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1600166898308-ae3035186d3f?w=800&auto=format&fit=crop&q=80',
+            ],
+            'description': '5×7 ft natural fiber, braided edge.',
+          },
+          {
+            'name': 'Woven Storage Baskets',
+            'category': 'Storage',
+            'price': 54,
+            'discount': 0,
+            'image':
+                'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop&q=80',
+            ],
+            'description': 'Set of three nesting seagrass baskets.',
+          },
+          {
+            'name': 'Floating Wall Shelf',
+            'category': 'Storage',
+            'price': 89,
+            'discount': 5,
+            'image':
+                'https://images.unsplash.com/photo-1594620302200-9a762244a156?w=800&auto=format&fit=crop&q=80',
+            'images': [
+              'https://images.unsplash.com/photo-1594620302200-9a762244a156?w=800&auto=format&fit=crop&q=80',
+            ],
+            'description': 'Walnut veneer, hidden bracket mount.',
           },
         ],
         'theme': _variantTheme(variant),

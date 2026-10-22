@@ -4,6 +4,4 @@ abstract class WebsiteRepository {
   Future<List<WebsiteDocument>> fetchWebsites();
   Future<WebsiteDocument> saveWebsite(WebsiteDocument document);
   Future<void> deleteWebsite(String id);
-  Future<bool> isPublishUsernameAvailable(String username, {String? excludeWebsiteId});
-  Future<WebsiteDocument?> fetchPublishedByUsername(String username);
 }

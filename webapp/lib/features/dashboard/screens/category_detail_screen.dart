@@ -8,9 +8,8 @@ import 'package:webapp/features/dashboard/widgets/preview_device_frame.dart';
 import 'package:webapp/features/dashboard/widgets/template_selection_panel.dart';
 import 'package:webapp/features/website/domain/entities/website_document.dart';
 import 'package:webapp/features/website/domain/repositories/website_repository.dart';
-import 'package:webapp/features/website/presentation/bloc/website_editor_bloc.dart';
 import 'package:webapp/features/dashboard/screens/template_fullscreen_preview_screen.dart';
-import 'package:webapp/features/website/presentation/screens/website_editor_screen.dart';
+import 'package:webapp/features/website/presentation/bloc/my_websites_bloc.dart';
 
 enum _PreviewMode { mobile, tablet, web }
 
@@ -38,6 +37,7 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
 
   _PreviewMode? _selectedMode;
   bool _isDetailPanelExpanded = true;
+  bool _isSaving = false;
   late WebsiteDocument _selectedDocument;
   late List<TemplateDefinition> _templateDefinitions;
   late int _selectedTemplateType;
@@ -61,8 +61,34 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     if (definition.templateType == _selectedTemplateType) return;
     setState(() {
       _selectedTemplateType = definition.templateType;
-      _selectedDocument = definition.toDocument();
+      _selectedDocument = definition.toDocument().copyWith(
+        id: _selectedDocument.id,
+        updatedAt: _selectedDocument.updatedAt,
+      );
     });
+  }
+
+  Future<void> _saveSelectedTemplate() async {
+    if (_isSaving) return;
+    setState(() => _isSaving = true);
+    try {
+      final repository = context.read<WebsiteRepository>();
+      final toSave = _selectedDocument.copyWith(updatedAt: DateTime.now());
+      await repository.saveWebsite(toSave);
+      if (!mounted) return;
+      context.read<MyWebsitesBloc>().add(const MyWebsitesRequested());
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Saved to My Websites')),
+      );
+      Navigator.of(context).pop();
+    } catch (error) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Could not save: $error')),
+      );
+    } finally {
+      if (mounted) setState(() => _isSaving = false);
+    }
   }
 
   _PreviewMode _defaultMode(BuildContext context) {
@@ -150,19 +176,9 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
         actions: [
           Padding(
             padding: const EdgeInsets.only(right: 12),
-            child: _GradientNextButton(
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (_) => BlocProvider(
-                      create: (_) => WebsiteEditorBloc(
-                        repository: context.read<WebsiteRepository>(),
-                      )..add(WebsiteEditorStarted(_selectedDocument)),
-                      child: const WebsiteEditorScreen(),
-                    ),
-                  ),
-                );
-              },
+            child: _GradientSaveButton(
+              isLoading: _isSaving,
+              onTap: _saveSelectedTemplate,
             ),
           ),
         ],
@@ -378,17 +394,21 @@ class _BottomSheetToggle extends StatelessWidget {
   }
 }
 
-class _GradientNextButton extends StatelessWidget {
-  const _GradientNextButton({required this.onTap});
+class _GradientSaveButton extends StatelessWidget {
+  const _GradientSaveButton({
+    required this.onTap,
+    required this.isLoading,
+  });
 
   final VoidCallback onTap;
+  final bool isLoading;
 
   @override
   Widget build(BuildContext context) {
     return Material(
       color: Colors.transparent,
       child: InkWell(
-        onTap: onTap,
+        onTap: isLoading ? null : onTap,
         borderRadius: BorderRadius.circular(20),
         child: Ink(
           decoration: BoxDecoration(
@@ -406,25 +426,36 @@ class _GradientNextButton extends StatelessWidget {
               ),
             ],
           ),
-          child: const Padding(
-            padding: EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Text(
-                  'Next',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 14,
+                if (isLoading)
+                  const SizedBox(
+                    width: 18,
+                    height: 18,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Colors.white,
+                    ),
+                  )
+                else ...[
+                  const Text(
+                    'Save',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 14,
+                    ),
                   ),
-                ),
-                SizedBox(width: 4),
-                Icon(
-                  Icons.arrow_forward_rounded,
-                  color: Colors.white,
-                  size: 18,
-                ),
+                  const SizedBox(width: 4),
+                  const Icon(
+                    Icons.check_rounded,
+                    color: Colors.white,
+                    size: 18,
+                  ),
+                ],
               ],
             ),
           ),

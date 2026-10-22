@@ -84,7 +84,6 @@ class _CatalogAutoBannerCarouselState extends State<CatalogAutoBannerCarousel> {
               itemBuilder: (context, index) => _BannerSlide(
                 banner: banners[index],
                 theme: widget.theme,
-                compact: widget.compact,
               ),
             ),
           ),
@@ -118,46 +117,21 @@ class _BannerSlide extends StatelessWidget {
   const _BannerSlide({
     required this.banner,
     required this.theme,
-    required this.compact,
   });
 
   final Map<String, dynamic> banner;
   final LayoutTheme theme;
-  final bool compact;
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: theme.cardDecoration(),
       clipBehavior: Clip.antiAlias,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          SiteImage(
-            path: banner['image'] as String?,
-            width: double.infinity,
-            height: double.infinity,
-          ),
-          Container(
-            color: Colors.black.withValues(alpha: 0.35),
-            padding: EdgeInsets.all(compact ? 12 : 14),
-            alignment: Alignment.bottomLeft,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  banner['title']?.toString() ?? '',
-                  style: theme.heading(compact, size: 16).copyWith(color: Colors.white),
-                ),
-                Text(
-                  banner['subtitle']?.toString() ?? '',
-                  style: theme.body(compact, size: 11).copyWith(color: Colors.white70),
-                ),
-              ],
-            ),
-          ),
-        ],
+      child: SiteImage(
+        path: banner['image'] as String?,
+        width: double.infinity,
+        height: double.infinity,
+        fit: BoxFit.cover,
       ),
     );
   }

@@ -1,5 +1,5 @@
 name: webapp
-description: "Flutter website configurator with local storage and Cloudflare publish."
+description: "Flutter website configurator with local storage."
 publish_to: 'none'
 
 version: 1.0.0+1
@@ -16,16 +16,13 @@ dependencies:
   flutter_bloc: ^9.1.1
   equatable: ^2.0.7
   path_provider: ^2.1.5
-  archive: ^4.0.7
   image_picker: ^1.1.2
   uuid: ^4.5.1
   path: ^1.9.1
-  http: ^1.2.2
-  crypto: ^3.0.6
-  blake3_dart: ^1.0.0
-  mime: ^2.0.0
   flutter_dotenv: ^5.2.1
   google_fonts: ^8.2.1
+  video_player: ^2.10.0
+  web: ^1.1.1
 
 dev_dependencies:
   flutter_test:

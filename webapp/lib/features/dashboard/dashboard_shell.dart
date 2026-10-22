@@ -4,9 +4,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:webapp/core/services/preferences_service.dart';
 import 'package:webapp/features/website/data/repositories/local_website_repository.dart';
 import 'package:webapp/core/constants/app_constants.dart';
-import 'package:webapp/features/cloudflare/data/cloudflare_publish_repository.dart';
-import 'package:webapp/features/cloudflare/data/cloudflare_service.dart';
-import 'package:webapp/features/cloudflare/presentation/bloc/cloudflare_bloc.dart';
 import 'package:webapp/features/dashboard/tabs/home_configurator_tab.dart';
 import 'package:webapp/features/website/domain/repositories/website_repository.dart';
 import 'package:webapp/features/website/presentation/bloc/my_websites_bloc.dart';
@@ -100,27 +97,15 @@ class AppProviders extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final repository = LocalWebsiteRepository(PreferencesService.shared);
-    final cloudflareService = CloudflareService();
-    final publishRepository = CloudflarePublishRepository(
-      websiteRepository: repository,
-      cloudflareService: cloudflareService,
-    );
 
     return MultiRepositoryProvider(
       providers: [
         RepositoryProvider<WebsiteRepository>.value(value: repository),
-        RepositoryProvider<CloudflareService>.value(value: cloudflareService),
-        RepositoryProvider<CloudflarePublishRepository>.value(value: publishRepository),
       ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider(
             create: (_) => MyWebsitesBloc(repository: repository),
-          ),
-          BlocProvider(
-            create: (context) => CloudflareBloc(
-              publishRepository: publishRepository,
-            ),
           ),
         ],
         child: child,

@@ -7,6 +7,10 @@ import 'package:webapp/features/templates/preview/shared/catalog_auto_banner_car
 import 'package:webapp/features/templates/preview/shared/catalog_item_pricing.dart';
 import 'package:webapp/features/templates/preview/shared/catalog_search_icon.dart';
 import 'package:webapp/features/templates/preview/shared/catalog_sort_controls.dart';
+import 'package:webapp/features/templates/preview/shared/catalog_product_detail_page.dart';
+import 'package:webapp/features/templates/preview/shared/catalog_product_grid.dart';
+import 'package:webapp/features/templates/preview/shared/catalog_product_reels_carousel.dart';
+import 'package:webapp/features/templates/preview/shared/catalog_product_utils.dart';
 import 'package:webapp/features/templates/preview/shared/catalog_store_footer.dart';
 import 'package:webapp/features/templates/preview/shared/site_image.dart';
 import 'package:webapp/features/website/domain/entities/website_document.dart';
@@ -37,6 +41,10 @@ class VariantCategoryPreview extends StatefulWidget {
 }
 
 class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
+  static const _productDetailRoute = '/product';
+
+  final GlobalKey<NavigatorState> _catalogNavigatorKey = GlobalKey<NavigatorState>();
+
   int _selectedCategoryIndex = 0;
   CatalogItemSort _catalogSort = CatalogItemSort.popularity;
   bool _catalogSearchOpen = false;
@@ -84,11 +92,25 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
     return widget.document.type == CategoryType.restaurantMenu ? 'Search menu' : 'Search products';
   }
 
+  bool get _isRestaurantCatalog => widget.document.type == CategoryType.restaurantMenu;
+
+  void _openProductDetail(Map<String, dynamic> item) {
+    _catalogNavigatorKey.currentState?.pushNamed(
+      _productDetailRoute,
+      arguments: item,
+    );
+  }
+
+  String _catalogProductNavTitle() {
+    return _isRestaurantCatalog ? 'Menu item' : 'Product';
+  }
+
   Widget _catalogProductsBlock({
     required String title,
     required List<Map<String, dynamic>> items,
     required LayoutTheme theme,
     required CartScope? cart,
+    required ValueChanged<Map<String, dynamic>> onProductTap,
   }) {
     final sorted = sortCatalogItems(items, _catalogSort);
     return _block(
@@ -115,7 +137,7 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
                     style: theme.body(compact, size: 12),
                   ),
                 )
-              : _tertiaryItems(sorted, theme, theme.tertiaryLayout, cart),
+              : _tertiaryItems(sorted, theme, theme.tertiaryLayout, cart, onProductTap: onProductTap),
         ],
       ),
       theme,
@@ -141,7 +163,98 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
         ? _list(tertiary, keys: const ['products', 'menuItems'])
         : const <Map<String, dynamic>>[];
 
-    final content = isCatalogType && _catalogSearchOpen
+    if (isCatalogType) {
+      return ColoredBox(
+        color: theme.background,
+        child: Navigator(
+          key: _catalogNavigatorKey,
+          onGenerateRoute: (settings) {
+            final name = settings.name ?? '/';
+            if (name == _productDetailRoute) {
+              final item = settings.arguments! as Map<String, dynamic>;
+              return MaterialPageRoute<void>(
+                settings: settings,
+                builder: (navContext) => _buildCatalogProductDetailScreen(
+                  navContext: navContext,
+                  item: item,
+                  theme: theme,
+                  cart: cart,
+                  catalogItems: catalogItems,
+                ),
+              );
+            }
+            return MaterialPageRoute<void>(
+              builder: (_) => _buildCatalogMainScreen(
+                primary: primary,
+                secondary: secondary,
+                tertiary: tertiary,
+                theme: theme,
+                cart: cart,
+                logo: logo,
+                title: title,
+                tagline: tagline,
+                phone: phone,
+                email: email,
+                catalogItems: catalogItems,
+              ),
+            );
+          },
+        ),
+      );
+    }
+
+    final content = _buildContent(
+      primary: primary,
+      secondary: secondary,
+      tertiary: tertiary,
+      theme: theme,
+      cart: cart,
+      logo: logo,
+      title: title,
+      tagline: tagline,
+      phone: phone,
+      email: email,
+      isCatalogType: isCatalogType,
+      catalogItems: catalogItems,
+    );
+
+    if (theme.navStyle == 'sidebar' && !widget.mobileLayout) {
+      return ColoredBox(
+        color: theme.background,
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SiteNavBar(
+              theme: theme,
+              title: title,
+              subtitle: tagline,
+              compact: widget.compact,
+              mobileLayout: widget.mobileLayout,
+              logo: logo,
+            ),
+            Expanded(child: content),
+          ],
+        ),
+      );
+    }
+
+    return ColoredBox(color: theme.background, child: content);
+  }
+
+  Widget _buildCatalogMainScreen({
+    required Map<String, dynamic> primary,
+    required Map<String, dynamic> secondary,
+    required Map<String, dynamic> tertiary,
+    required LayoutTheme theme,
+    required CartScope? cart,
+    required String? logo,
+    required String title,
+    required String tagline,
+    required String phone,
+    required String email,
+    required List<Map<String, dynamic>> catalogItems,
+  }) {
+    final content = _catalogSearchOpen
         ? _buildCatalogSearchContent(
             primary: primary,
             theme: theme,
@@ -159,33 +272,68 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
             tagline: tagline,
             phone: phone,
             email: email,
-            isCatalogType: isCatalogType,
+            isCatalogType: true,
             catalogItems: catalogItems,
           );
 
     if (theme.navStyle == 'sidebar' && !widget.mobileLayout) {
-      return ColoredBox(
-        color: theme.background,
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (!_catalogSearchOpen)
-              SiteNavBar(
-                theme: theme,
-                title: title,
-                subtitle: isCatalogType ? tagline : null,
-                compact: widget.compact,
-                mobileLayout: widget.mobileLayout,
-                logo: logo,
-                onSearchTap: isCatalogType ? _openCatalogSearch : null,
-              ),
-            Expanded(child: content),
-          ],
-        ),
+      return Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          if (!_catalogSearchOpen)
+            SiteNavBar(
+              theme: theme,
+              title: title,
+              subtitle: tagline,
+              compact: widget.compact,
+              mobileLayout: widget.mobileLayout,
+              logo: logo,
+              onSearchTap: _openCatalogSearch,
+            ),
+          Expanded(child: content),
+        ],
       );
     }
 
-    return ColoredBox(color: theme.background, child: content);
+    return content;
+  }
+
+  Widget _buildCatalogProductDetailScreen({
+    required BuildContext navContext,
+    required Map<String, dynamic> item,
+    required LayoutTheme theme,
+    required CartScope? cart,
+    required List<Map<String, dynamic>> catalogItems,
+  }) {
+    final detail = CatalogProductDetailView(
+      item: item,
+      theme: theme,
+      compact: compact,
+      showAddToCart: widget.showAddToCart,
+      isRestaurant: _isRestaurantCatalog,
+      allProducts: catalogItems,
+      onProductTap: (next) {
+        _catalogNavigatorKey.currentState?.pushReplacementNamed(
+          _productDetailRoute,
+          arguments: next,
+        );
+      },
+    );
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (theme.navStyle != 'sidebar' || widget.mobileLayout)
+          SiteNavBar(
+            theme: theme,
+            title: _catalogProductNavTitle(),
+            compact: widget.compact,
+            mobileLayout: widget.mobileLayout,
+            onBackTap: () => Navigator.pop(navContext),
+          ),
+        Expanded(child: detail),
+      ],
+    );
   }
 
   Widget _buildCatalogSearchContent({
@@ -227,6 +375,7 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
         items: filtered,
         theme: theme,
         cart: cart,
+        onProductTap: _openProductDetail,
       ),
       CatalogStoreFooter(primary: primary, theme: theme, compact: widget.compact),
       if (theme.navStyle == 'bottom')
@@ -282,7 +431,13 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
         ),
       if (primary['mapEmbed'] != null && (primary['mapEmbed'] as String).isNotEmpty) _mapBlock(primary, theme),
       if (isCatalogType)
-        _catalogSection(secondary: secondary, tertiary: tertiary, theme: theme, cart: cart)
+        _catalogSection(
+          primary: primary,
+          secondary: secondary,
+          tertiary: tertiary,
+          theme: theme,
+          cart: cart,
+        )
       else ...[
         _block(widget.secondaryTitle, _secondary(secondary, theme, theme.secondaryLayout), theme),
         if (widget.document.type == CategoryType.businessProfile && _list(secondary, keys: ['team']).isNotEmpty)
@@ -324,6 +479,7 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
   }
 
   Widget _catalogSection({
+    required Map<String, dynamic> primary,
     required Map<String, dynamic> secondary,
     required Map<String, dynamic> tertiary,
     required LayoutTheme theme,
@@ -331,17 +487,30 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
   }) {
     final categories = _list(secondary, keys: const ['categories']);
     final allItems = _list(tertiary, keys: const ['products', 'menuItems']);
+    final onProductTap = _openProductDetail;
+    final reels = resolveCatalogReels(
+      rawReels: primary['reels'] as List?,
+      products: allItems,
+    );
+    final reelsStrip = CatalogProductReelsCarousel(
+      reels: reels,
+      theme: theme,
+      compact: compact,
+      onReelTap: onProductTap,
+    );
 
     if (categories.isEmpty) {
       return Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
+          reelsStrip,
           _block(widget.secondaryTitle, _secondary(secondary, theme, theme.secondaryLayout), theme),
           _catalogProductsBlock(
             title: widget.tertiaryTitle,
             items: allItems,
             theme: theme,
             cart: cart,
+            onProductTap: onProductTap,
           ),
         ],
       );
@@ -360,6 +529,7 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
+        reelsStrip,
         Padding(
           padding: theme.pad(compact),
           child: Column(
@@ -397,6 +567,7 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
           items: filtered,
           theme: theme,
           cart: cart,
+          onProductTap: onProductTap,
         ),
       ],
     );
@@ -601,67 +772,24 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
       widget.document.type == CategoryType.ecommerce ||
       widget.document.type == CategoryType.restaurantMenu;
 
-  int _responsiveCatalogColumns(double width) {
-    const minColumns = 2;
-    const maxColumns = 6;
-    final gap = compact ? 8.0 : 12.0;
-    final targetCell = compact ? 152.0 : 176.0;
-    final columns = ((width + gap) / (targetCell + gap)).floor();
-    return columns.clamp(minColumns, maxColumns);
-  }
-
-  static const double _catalogCardRadius = 8;
-  static const double _catalogImageRadius = 10;
-  static const double _catalogImageAspect = 1 / 1.2;
-
-  double _catalogCellAspectRatio(double gridWidth, int columns) {
-    final gap = compact ? 8.0 : 12.0;
-    final cellWidth = (gridWidth - gap * (columns - 1)) / columns;
-    final pad = compact ? 8.0 : 10.0;
-    final innerWidth = cellWidth - 2 * pad;
-    final imageHeight = innerWidth / _catalogImageAspect;
-    final titleBlock = compact ? 32.0 : 36.0;
-    final subtitleBlock = compact ? 14.0 : 16.0;
-    final priceBlock = compact ? 28.0 : 32.0;
-    final verticalGaps = compact ? 12.0 : 14.0;
-    final cellHeight = 2 * pad + imageHeight + titleBlock + subtitleBlock + priceBlock + verticalGaps;
-    return cellWidth / cellHeight;
-  }
-
-  BoxDecoration _catalogCardDecoration(LayoutTheme theme) {
-    final base = theme.cardDecoration();
-    return BoxDecoration(
-      color: base.color,
-      border: base.border,
-      boxShadow: base.boxShadow,
-      borderRadius: BorderRadius.circular(_catalogCardRadius),
-    );
-  }
-
-  Widget _responsiveCatalogGrid(
-    List<Map<String, dynamic>> items,
-    LayoutTheme theme, {
-    CartScope? cart,
-  }) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final columns = _responsiveCatalogColumns(constraints.maxWidth);
-        final aspect = _catalogCellAspectRatio(constraints.maxWidth, columns);
-        return _catalogProductGrid(items, theme, columns, aspect, cart: cart);
-      },
-    );
-  }
-
   Widget _tertiaryItems(
     List<Map<String, dynamic>> items,
     LayoutTheme theme,
     String mode,
-    CartScope? cart,
-  ) {
+    CartScope? cart, {
+    ValueChanged<Map<String, dynamic>>? onProductTap,
+  }) {
     if (items.isEmpty) return const SizedBox.shrink();
 
     if (_isCatalogDocument) {
-      return _responsiveCatalogGrid(items, theme, cart: cart);
+      return CatalogProductGrid(
+        items: items,
+        theme: theme,
+        compact: compact,
+        showAddToCart: widget.showAddToCart,
+        cart: cart,
+        onProductTap: onProductTap,
+      );
     }
 
     if (mode == 'list' || mode == 'rows' || mode == 'price' || mode == 'catalog') {
@@ -691,185 +819,6 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
     }
 
     return _grid(items, theme, mobileLayout ? 1 : 2, mobileLayout ? 2.2 : 1.1, cart: cart);
-  }
-
-  Widget _catalogProductGrid(
-    List<Map<String, dynamic>> items,
-    LayoutTheme theme,
-    int columns,
-    double aspect, {
-    CartScope? cart,
-  }) {
-    return GridView.builder(
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-        crossAxisCount: columns,
-        crossAxisSpacing: compact ? 8 : 12,
-        mainAxisSpacing: compact ? 8 : 12,
-        childAspectRatio: aspect,
-      ),
-      itemCount: items.length,
-      itemBuilder: (context, index) {
-        final item = items[index];
-        return Container(
-          padding: EdgeInsets.all(compact ? 8 : 10),
-          decoration: _catalogCardDecoration(theme),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _catalogProductImage(item, theme),
-              SizedBox(height: compact ? 6 : 8),
-              Text(
-                _label(item),
-                maxLines: 2,
-                overflow: TextOverflow.ellipsis,
-                style: theme.heading(compact, size: compact ? 12 : 13),
-              ),
-              if (_subtitle(item).isNotEmpty) ...[
-                SizedBox(height: compact ? 2 : 4),
-                Text(
-                  _subtitle(item),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: theme.body(compact, size: 10),
-                ),
-              ],
-              const Spacer(),
-              Row(
-                children: [
-                  Expanded(child: _catalogPriceRow(item, theme)),
-                  if (widget.showAddToCart && cart != null)
-                    IconButton(
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-                      icon: const Icon(Icons.add_circle_outline, size: 20),
-                      onPressed: () => cart.addToCart(_label(item), _priceNum(item)),
-                    ),
-                ],
-              ),
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _catalogPriceRow(Map<String, dynamic> item, LayoutTheme theme) {
-    final sale = catalogSalePrice(item);
-    final compareAt = catalogCompareAtPrice(item);
-    return Wrap(
-      crossAxisAlignment: WrapCrossAlignment.center,
-      spacing: compact ? 5 : 6,
-      children: [
-        Text(
-          catalogFormatMoney(sale),
-          style: theme.body(compact, size: 11).copyWith(
-            color: theme.primary,
-            fontWeight: FontWeight.w700,
-          ),
-        ),
-        if (compareAt != null)
-          Text(
-            catalogFormatMoney(compareAt),
-            style: theme.body(compact, size: 10).copyWith(
-              color: theme.text.withValues(alpha: 0.45),
-              decoration: TextDecoration.lineThrough,
-              decorationColor: theme.text.withValues(alpha: 0.35),
-            ),
-          ),
-      ],
-    );
-  }
-
-  Widget _catalogProductImage(Map<String, dynamic> item, LayoutTheme theme) {
-    return AspectRatio(
-      aspectRatio: _catalogImageAspect,
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(_catalogImageRadius),
-            child: _catalogImageFill(item, theme),
-          ),
-          if (_isBestSeller(item)) _bestSellerBadge(theme),
-        ],
-      ),
-    );
-  }
-
-  Widget _catalogImageFill(Map<String, dynamic> item, LayoutTheme theme) {
-    final path = item['image'] as String?;
-    if (path != null && path.isNotEmpty) {
-      return SiteImage(
-        path: path,
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
-        borderRadius: _catalogImageRadius,
-      );
-    }
-    return Container(
-      width: double.infinity,
-      height: double.infinity,
-      decoration: BoxDecoration(
-        color: theme.primary.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(_catalogImageRadius),
-      ),
-      alignment: Alignment.center,
-      child: Icon(Icons.image_outlined, color: theme.primary, size: compact ? 24 : 28),
-    );
-  }
-
-  Widget _bestSellerBadge(LayoutTheme theme) {
-    return Positioned(
-      top: compact ? 6 : 8,
-      left: compact ? 6 : 8,
-      child: DecoratedBox(
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-            colors: [
-              theme.primary,
-              Color.lerp(theme.primary, theme.accent, 0.65) ?? theme.accent,
-            ],
-          ),
-          borderRadius: BorderRadius.circular(6),
-          boxShadow: [
-            BoxShadow(
-              color: theme.primary.withValues(alpha: 0.35),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Padding(
-          padding: EdgeInsets.symmetric(horizontal: compact ? 7 : 8, vertical: compact ? 3 : 4),
-          child: Text(
-            'Best seller',
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: compact ? 9 : 10,
-              fontWeight: FontWeight.w700,
-              letterSpacing: 0.2,
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-  bool _isBestSeller(Map<String, dynamic> item) {
-    final value = item['bestSeller'] ?? item['bestseller'] ?? item['isBestSeller'];
-    if (value is bool) return value;
-    if (value is num) return value != 0;
-    if (value is String) {
-      final normalized = value.toLowerCase();
-      return normalized == 'true' || normalized == '1' || normalized == 'yes';
-    }
-    return false;
   }
 
   Widget _grid(List<Map<String, dynamic>> items, LayoutTheme theme, int columns, double aspect, {CartScope? cart}) {

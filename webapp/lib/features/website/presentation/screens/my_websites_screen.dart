@@ -1,12 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:webapp/core/domain/category_type.dart';
 import 'package:webapp/features/website/domain/entities/website_document.dart';
-import 'package:webapp/features/website/domain/repositories/website_repository.dart';
 import 'package:webapp/features/website/presentation/bloc/my_websites_bloc.dart';
-import 'package:webapp/features/website/presentation/bloc/website_editor_bloc.dart';
-import 'package:webapp/features/website/presentation/screens/website_editor_screen.dart';
+import 'package:webapp/features/dashboard/screens/category_detail_screen.dart';
 
 class MyWebsitesScreen extends StatelessWidget {
   const MyWebsitesScreen({super.key});
@@ -168,39 +165,13 @@ class _WebsiteTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final publishedUrl = site.deployment?.publishedUrl;
-    final hasLiveUrl = publishedUrl != null && publishedUrl.isNotEmpty;
-
     return Card(
       child: ListTile(
         title: Text(site.name),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text('${CategoryType.label(site.type)} · Template ${site.templateType}'),
-            if (hasLiveUrl) ...[
-              const SizedBox(height: 4),
-              Text(
-                publishedUrl,
-                style: const TextStyle(color: Color(0xFF2563EB), fontSize: 12),
-              ),
-            ],
-          ],
-        ),
+        subtitle: Text('${CategoryType.label(site.type)} · Template ${site.templateType}'),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (hasLiveUrl)
-              IconButton(
-                icon: const Icon(Icons.open_in_new_rounded, color: Color(0xFF2563EB)),
-                tooltip: 'Open live site',
-                onPressed: () async {
-                  final uri = Uri.parse(publishedUrl);
-                  if (await canLaunchUrl(uri)) {
-                    await launchUrl(uri, mode: LaunchMode.externalApplication);
-                  }
-                },
-              ),
             IconButton(
               icon: const Icon(Icons.delete_outline, color: Colors.red),
               onPressed: site.id == null
@@ -228,11 +199,9 @@ class _WebsiteTile extends StatelessWidget {
         onTap: () {
           Navigator.of(context).push(
             MaterialPageRoute<void>(
-              builder: (_) => BlocProvider(
-                create: (_) => WebsiteEditorBloc(
-                  repository: context.read<WebsiteRepository>(),
-                )..add(WebsiteEditorStarted(site)),
-                child: const WebsiteEditorScreen(),
+              builder: (_) => CategoryDetailScreen(
+                categoryType: site.type,
+                initialDocument: site,
               ),
             ),
           );

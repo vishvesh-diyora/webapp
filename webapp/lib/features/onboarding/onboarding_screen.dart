@@ -37,7 +37,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       icon: Icons.rocket_launch_rounded,
       title: 'Launch in Minutes',
       subtitle:
-          'Pick a template, customize your layout, and publish — no coding required.',
+          'Pick a template, customize your layout, and save locally — no coding required.',
       gradient: [Color(0xFF10B981), Color(0xFF0EA5E9)],
     ),
   ];

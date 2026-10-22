@@ -13,7 +13,7 @@ class HomeConfiguratorTab extends StatelessWidget {
   static const _banners = [
     _BannerData(
       title: 'Build in Minutes',
-      subtitle: 'Choose a category, pick a template, publish static sites',
+      subtitle: 'Choose a category, pick a template, save on this device',
       gradient: [Color(0xFF4F46E5), Color(0xFF7C3AED), Color(0xFF6366F1)],
       icon: Icons.rocket_launch_rounded,
     ),
@@ -24,8 +24,8 @@ class HomeConfiguratorTab extends StatelessWidget {
       icon: Icons.auto_awesome_mosaic_rounded,
     ),
     _BannerData(
-      title: 'Edit & Republish',
-      subtitle: 'Same JSON powers preview, editor, and generated websites',
+      title: 'Edit & Save',
+      subtitle: 'Same JSON powers preview and your saved sites list',
       gradient: [Color(0xFF059669), Color(0xFF0D9488), Color(0xFF0EA5E9)],
       icon: Icons.sync_rounded,
     ),
