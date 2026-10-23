@@ -7,6 +7,8 @@ import 'package:webapp/features/dashboard/widgets/portfolio/portfolio_screen_bac
 import 'package:webapp/features/dashboard/widgets/preview_device_frame.dart';
 import 'package:webapp/features/dashboard/widgets/template_selection_panel.dart';
 import 'package:webapp/features/website/domain/entities/website_document.dart';
+import 'package:webapp/features/export/export_document_resolver.dart';
+import 'package:webapp/features/export/static_site_exporter.dart';
 import 'package:webapp/features/website/domain/repositories/website_repository.dart';
 import 'package:webapp/features/dashboard/screens/template_fullscreen_preview_screen.dart';
 import 'package:webapp/features/website/presentation/bloc/my_websites_bloc.dart';
@@ -47,7 +49,8 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     super.initState();
     _templateDefinitions = CategoryTemplatesData.templatesForCategory(widget.categoryType);
     if (widget.initialDocument != null) {
-      _selectedDocument = widget.initialDocument!;
+      _selectedDocument =
+          ExportDocumentResolver.ensureFullContent(widget.initialDocument!);
       _selectedTemplateType = _selectedDocument.templateType;
     } else {
       final first = _templateDefinitions.firstOrNull;
@@ -73,12 +76,22 @@ class _CategoryDetailScreenState extends State<CategoryDetailScreen> {
     setState(() => _isSaving = true);
     try {
       final repository = context.read<WebsiteRepository>();
-      final toSave = _selectedDocument.copyWith(updatedAt: DateTime.now());
+      final toSave = ExportDocumentResolver.ensureFullContent(
+        _selectedDocument.copyWith(updatedAt: DateTime.now()),
+      );
       await repository.saveWebsite(toSave);
+      String? exportNote;
+      try {
+        final path = await StaticSiteExporter.exportAndDownload(toSave);
+        exportNote =
+            'Website ZIP ready ($path). Upload the whole folder to your host.';
+      } catch (_) {
+        exportNote = 'Saved locally; could not download static site ZIP.';
+      }
       if (!mounted) return;
       context.read<MyWebsitesBloc>().add(const MyWebsitesRequested());
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Saved to My Websites')),
+        SnackBar(content: Text('Saved to My Websites. $exportNote')),
       );
       Navigator.of(context).pop();
     } catch (error) {
