@@ -1,54 +1,61 @@
-import 'dart:convert';
-
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:webapp/export_site_data.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
+import 'package:webapp/features/export_admin/export_admin_editor_screen.dart';
+import 'package:webapp/features/export_admin/export_admin_login_screen.dart';
+import 'package:webapp/features/export_admin/export_admin_session.dart';
+import 'package:webapp/features/export_admin/export_runtime_config.dart';
+import 'package:webapp/features/export_admin/export_site_loader.dart';
 import 'package:webapp/features/dashboard/widgets/category_template_preview_content.dart';
 import 'package:webapp/features/dashboard/widgets/portfolio/portfolio_screen_background.dart';
-import 'package:webapp/features/templates/preview/template_preview_image_resolver.dart';
 import 'package:webapp/features/website/domain/entities/website_document.dart';
 
-/// Hosted static site entry — same widgets as in-app template preview.
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  runApp(const _ExportViewerBootstrap());
+  usePathUrlStrategy();
+  runApp(const ExportHostedApp());
 }
 
-class _ExportViewerBootstrap extends StatefulWidget {
-  const _ExportViewerBootstrap();
+class ExportHostedApp extends StatefulWidget {
+  const ExportHostedApp();
 
   @override
-  State<_ExportViewerBootstrap> createState() => _ExportViewerBootstrapState();
+  State<ExportHostedApp> createState() => _ExportHostedAppState();
 }
 
-class _ExportViewerBootstrapState extends State<_ExportViewerBootstrap> {
+class _ExportHostedAppState extends State<ExportHostedApp> {
+  ExportRuntimeConfig? _config;
   WebsiteDocument? _document;
   String? _error;
+  bool _adminMode = false;
 
   @override
   void initState() {
     super.initState();
-    _load();
+    _bootstrap();
   }
 
-  Future<void> _load() async {
+  Future<void> _bootstrap() async {
     try {
-      Map<String, dynamic>? json = readInlineExportSiteData();
-      if (json == null) {
-        final uri = Uri.base.resolve('site.json');
-        final response = await http.get(uri);
-        if (response.statusCode != 200) {
-          throw StateError('HTTP ${response.statusCode}');
-        }
-        json = jsonDecode(response.body) as Map<String, dynamic>;
-      }
-      final doc = WebsiteDocument.fromJson(json);
+      final config = await loadRuntimeConfig();
+      final doc = await loadSiteDocument(config);
+      final path = Uri.base.path;
+      final admin = path.contains('/admin');
+      if (!mounted) return;
       setState(() {
-        _document = TemplatePreviewImageResolver.documentWithPreviewImages(doc);
+        _config = config;
+        _document = doc;
+        _adminMode = admin;
       });
     } catch (e) {
+      if (!mounted) return;
       setState(() => _error = e.toString());
     }
+  }
+
+  Future<void> _reloadSite() async {
+    final config = _config ?? ExportRuntimeConfig.deployDefaults;
+    final doc = await loadSiteDocument(config);
+    if (mounted) setState(() => _document = doc);
   }
 
   @override
@@ -56,31 +63,41 @@ class _ExportViewerBootstrapState extends State<_ExportViewerBootstrap> {
     if (_error != null) {
       return MaterialApp(
         home: Scaffold(
-          body: Center(
-            child: Padding(
-              padding: const EdgeInsets.all(24),
-              child: Text(
-                'Could not load site.json.\n$_error',
-                textAlign: TextAlign.center,
-              ),
-            ),
-          ),
+          body: Center(child: Text('Failed to load site.\n$_error')),
         ),
       );
     }
-    if (_document == null) {
+    if (_config == null || _document == null) {
       return const MaterialApp(
-        home: Scaffold(
-          body: Center(child: CircularProgressIndicator()),
-        ),
+        home: Scaffold(body: Center(child: CircularProgressIndicator())),
       );
     }
-    return _ExportViewerApp(document: _document!);
+
+    if (_adminMode) {
+      return MaterialApp(
+        debugShowCheckedModeBanner: false,
+        home: exportAdminIsLoggedIn()
+            ? ExportAdminEditorScreen(
+                config: _config!,
+                initialDocument: _document!,
+                onSaved: (doc) {
+                  setState(() => _document = doc);
+                  _reloadSite();
+                },
+              )
+            : ExportAdminLoginScreen(
+                config: _config!,
+                onLoggedIn: () => setState(() {}),
+              ),
+      );
+    }
+
+    return _PublicSiteApp(document: _document!);
   }
 }
 
-class _ExportViewerApp extends StatelessWidget {
-  const _ExportViewerApp({required this.document});
+class _PublicSiteApp extends StatelessWidget {
+  const _PublicSiteApp({required this.document});
 
   final WebsiteDocument document;
 

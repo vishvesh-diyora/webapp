@@ -10,6 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  flutter_web_plugins:
+    sdk: flutter
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.5.3
   url_launcher: ^6.3.1
@@ -36,3 +38,4 @@ flutter:
   assets:
     - .env
     - assets/export_viewer_bundle.zip
+    - tool/serve_export_site.py
