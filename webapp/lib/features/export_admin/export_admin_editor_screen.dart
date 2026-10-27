@@ -2,9 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:uuid/uuid.dart';
 import 'package:webapp/core/domain/category_type.dart';
+import 'package:webapp/features/export_admin/export_admin_media_field.dart';
+import 'package:webapp/features/export_admin/export_admin_reel_slot.dart';
+import 'package:webapp/features/export_admin/export_admin_ui.dart';
 import 'package:webapp/features/export_admin/export_github_service.dart';
 import 'package:webapp/features/export_admin/export_runtime_config.dart';
 import 'package:webapp/features/website/domain/entities/website_document.dart';
+
+class _AdminSection {
+  const _AdminSection(this.id, this.title, this.icon, this.subtitle);
+  final String id;
+  final String title;
+  final IconData icon;
+  final String subtitle;
+}
 
 class ExportAdminEditorScreen extends StatefulWidget {
   const ExportAdminEditorScreen({
@@ -25,20 +36,40 @@ class ExportAdminEditorScreen extends StatefulWidget {
 class _ExportAdminEditorScreenState extends State<ExportAdminEditorScreen> {
   late WebsiteDocument _doc;
   bool _saving = false;
+  String? _sectionId;
+  int? _editIndex;
   final _picker = ImagePicker();
   final _uuid = const Uuid();
+
+  static const _defaultSocial = [
+    {'platform': 'Instagram', 'url': '', 'icon': 'instagram'},
+    {'platform': 'Facebook', 'url': '', 'icon': 'facebook'},
+    {'platform': 'Twitter', 'url': '', 'icon': 'twitter'},
+    {'platform': 'LinkedIn', 'url': '', 'icon': 'linkedin'},
+    {'platform': 'YouTube', 'url': '', 'icon': 'youtube'},
+  ];
 
   @override
   void initState() {
     super.initState();
     _doc = widget.initialDocument;
+    final links = _list(1, 'socialLinks');
+    if (links.isEmpty) {
+      final data = _block(1);
+      data['socialLinks'] = _defaultSocial.map((e) => Map<String, dynamic>.from(e)).toList();
+      _doc = _doc.updateBlockContent(1, data);
+    }
   }
 
   bool get _isCatalog =>
       _doc.type == CategoryType.ecommerce || _doc.type == CategoryType.restaurantMenu;
 
-  String get _titleKey =>
-      _doc.type == CategoryType.restaurantMenu ? 'restaurantName' : 'storeName';
+  String get _titleKey {
+    if (_doc.type == CategoryType.restaurantMenu) return 'restaurantName';
+    if (_doc.type == CategoryType.businessProfile) return 'businessName';
+    if (_doc.type == CategoryType.portfolio) return 'name';
+    return 'storeName';
+  }
 
   String get _itemsKey => _doc.type == CategoryType.restaurantMenu ? 'menuItems' : 'products';
 
@@ -49,32 +80,79 @@ class _ExportAdminEditorScreenState extends State<ExportAdminEditorScreen> {
     setState(() => _doc = _doc.updateBlockContent(type, data));
   }
 
+  List<Map<String, dynamic>> _list(int block, String key) => List<Map<String, dynamic>>.from(
+        (_block(block)[key] as List?)?.whereType<Map<String, dynamic>>() ?? [],
+      );
+
+  void _writeList(int block, String key, List<Map<String, dynamic>> items) {
+    final data = _block(block);
+    data[key] = items;
+    _setBlock(block, data);
+  }
+
+  List<_AdminSection> get _sections {
+    final sections = <_AdminSection>[
+      const _AdminSection('profile', 'Profile', Icons.storefront_outlined, 'Logo, name, contact'),
+      const _AdminSection('social', 'Social links', Icons.share_outlined, 'Instagram, Facebook, and more'),
+    ];
+    if (_isCatalog) {
+      sections.addAll(const [
+        _AdminSection('banners', 'Banners', Icons.view_carousel_outlined, 'Hero slides'),
+        _AdminSection('categories', 'Categories', Icons.grid_view_rounded, 'Shop categories'),
+        _AdminSection('items', 'Products', Icons.shopping_bag_outlined, 'Menu & catalog items'),
+      ]);
+      return sections;
+    }
+    for (final type in [1, 2, 3]) {
+      final data = _block(type);
+      for (final entry in data.entries) {
+        final value = entry.value;
+        if (value is! List || value.isEmpty) continue;
+        if (value.first is! Map) continue;
+        if (entry.key == 'socialLinks' || entry.key == 'theme') continue;
+        sections.add(
+          _AdminSection(
+            '$type:${entry.key}',
+            _label(entry.key),
+            Icons.list_alt_outlined,
+            '${value.length} items',
+          ),
+        );
+      }
+    }
+    return sections;
+  }
+
+  String _label(String key) {
+    final spaced = key.replaceAllMapped(RegExp(r'([A-Z])'), (m) => ' ${m[1]}');
+    if (spaced.isEmpty) return key;
+    return spaced[0].toUpperCase() + spaced.substring(1);
+  }
+
   Future<void> _pickAndUploadImage(void Function(String url) onUrl) async {
     final file = await _picker.pickImage(source: ImageSource.gallery);
     if (file == null) return;
     final bytes = await file.readAsBytes();
     final github = widget.config.github;
     if (github == null || !github.isConfigured) {
-      _showSnack('Configure GitHub in Firebase Remote Config to upload images.');
+      _showSnack('Set up GitHub in Firebase Remote Config to upload photos.');
       return;
     }
     final name = '${_uuid.v4()}.${file.name.split('.').last}';
-    final service = ExportGithubService(github);
-    final url = await service.uploadBytes(bytes: bytes, fileName: name);
+    final url = await ExportGithubService(github).uploadBytes(bytes: bytes, fileName: name);
     onUrl(url);
-    _showSnack('Image uploaded');
+    _showSnack('Photo updated');
   }
 
   Future<void> _save() async {
     setState(() => _saving = true);
     try {
-      final payload = _doc.toJson();
       final github = widget.config.github;
       if (github != null && github.isConfigured) {
-        await ExportGithubService(github).publishSiteJson(payload);
-        _showSnack('Saved to GitHub — visitors will see updates shortly.');
+        await ExportGithubService(github).publishSiteJson(_doc.toJson());
+        _showSnack('Saved — live site will update shortly.');
       } else {
-        _showSnack('GitHub not configured in Remote Config — changes are not published.');
+        _showSnack('GitHub not configured — publish when Remote Config is ready.');
       }
       widget.onSaved(_doc);
     } catch (e) {
@@ -89,490 +167,747 @@ class _ExportAdminEditorScreenState extends State<ExportAdminEditorScreen> {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
+  void _openSection(String id) {
+    setState(() {
+      _sectionId = id;
+      _editIndex = null;
+    });
+  }
+
+  void _back() {
+    setState(() {
+      if (_editIndex != null && MediaQuery.sizeOf(context).width < 900) {
+        _editIndex = null;
+        return;
+      }
+      _sectionId = null;
+      _editIndex = null;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Edit website'),
-        actions: [
-          if (_saving)
-            const Padding(
-              padding: EdgeInsets.all(16),
-              child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)),
-            )
-          else
-            TextButton(onPressed: _save, child: const Text('Save')),
-        ],
+    final theme = Theme.of(context);
+    final wide = MediaQuery.sizeOf(context).width >= 900;
+    return Theme(
+      data: theme.copyWith(
+        listTileTheme: const ListTileThemeData(contentPadding: EdgeInsets.symmetric(horizontal: 16)),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(20),
-        children: [
-          _sectionTitle('Business info'),
-          _textField('Name', _block(1)[_titleKey] as String? ?? _doc.name, (v) {
-            final p = _block(1);
-            p[_titleKey] = v;
-            _setBlock(1, p);
-          }),
-          _textField('Tagline', _block(1)['tagline'] as String? ?? '', (v) {
-            final p = _block(1);
-            p['tagline'] = v;
-            _setBlock(1, p);
-          }),
-          _textField('Description', _doc.description, (v) {
-            setState(() => _doc = _doc.copyWith(description: v));
-          }),
-          _textField('Logo image URL', _doc.logo, (v) {
-            setState(() => _doc = _doc.copyWith(logo: v));
-          }),
-          TextButton.icon(
-            onPressed: () => _pickAndUploadImage((url) {
-              setState(() => _doc = _doc.copyWith(logo: url));
-            }),
-            icon: const Icon(Icons.upload),
-            label: const Text('Upload logo to GitHub'),
-          ),
-          _textField('Phone', _block(1)['phone'] as String? ?? '', (v) {
-            final p = _block(1);
-            p['phone'] = v;
-            _setBlock(1, p);
-          }),
-          _textField('Email', _block(1)['email'] as String? ?? '', (v) {
-            final p = _block(1);
-            p['email'] = v;
-            _setBlock(1, p);
-          }),
-          _textField('Address / location', _block(1)['address'] as String? ?? '', (v) {
-            final p = _block(1);
-            p['address'] = v;
-            _setBlock(1, p);
-          }),
-          _textField('WhatsApp', _block(1)['whatsapp'] as String? ?? '', (v) {
-            final p = _block(1);
-            p['whatsapp'] = v;
-            _setBlock(1, p);
-          }),
-          _textField('Latitude', (_block(1)['latitude'] ?? '').toString(), (v) {
-            final p = _block(1);
-            p['latitude'] = double.tryParse(v) ?? v;
-            _setBlock(1, p);
-          }),
-          _textField('Longitude', (_block(1)['longitude'] ?? '').toString(), (v) {
-            final p = _block(1);
-            p['longitude'] = double.tryParse(v) ?? v;
-            _setBlock(1, p);
-          }),
-          _socialLinksEditor(),
-          if (_isCatalog) ...[
-            _sectionTitle('Banners'),
-            _bannersEditor(),
-            _sectionTitle('Categories'),
-            _categoriesEditor(),
-            _sectionTitle('Products / menu'),
-            _productsEditor(),
-          ] else
-            _sectionTitle('Template blocks'),
-          if (!_isCatalog)
-            Text(
-              'Open runtime-config.json and edit site.json on GitHub for full ${CategoryType.label(_doc.type)} content, or extend admin in app.',
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-          const SizedBox(height: 40),
-        ],
-      ),
-    );
-  }
-
-  Widget _sectionTitle(String t) => Padding(
-        padding: const EdgeInsets.only(top: 24, bottom: 12),
-        child: Text(t, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
-      );
-
-  Widget _textField(String label, String value, ValueChanged<String> onChanged) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 10),
-      child: TextField(
-        decoration: InputDecoration(labelText: label, border: const OutlineInputBorder()),
-        controller: TextEditingController(text: value)
-          ..selection = TextSelection.collapsed(offset: value.length),
-        onChanged: onChanged,
-      ),
-    );
-  }
-
-  Widget _socialLinksEditor() {
-    final p = _block(1);
-    final links = List<Map<String, dynamic>>.from(
-      (p['socialLinks'] as List?)?.whereType<Map<String, dynamic>>() ?? [],
-    );
-    if (links.isEmpty) {
-      links.addAll([
-        {'platform': 'Instagram', 'url': '', 'icon': 'instagram'},
-        {'platform': 'Facebook', 'url': '', 'icon': 'facebook'},
-      ]);
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        const Text('Social links', style: TextStyle(fontWeight: FontWeight.w600)),
-        for (var i = 0; i < links.length; i++)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: Row(
-              children: [
-                Expanded(
-                  flex: 2,
-                  child: TextField(
-                    decoration: InputDecoration(
-                      labelText: links[i]['platform'] as String? ?? 'Platform',
-                      border: const OutlineInputBorder(),
-                    ),
-                    controller: TextEditingController(text: links[i]['platform'] as String? ?? ''),
-                    onChanged: (v) => links[i]['platform'] = v,
-                  ),
+      child: Scaffold(
+        backgroundColor: theme.colorScheme.surfaceContainerLowest,
+        appBar: AppBar(
+          leading: _sectionId == null
+              ? null
+              : IconButton(icon: const Icon(Icons.arrow_back), onPressed: _back),
+          title: Text(_sectionId == null ? 'Admin' : _sectionTitle(_sectionId!)),
+          actions: [
+            if (_saving)
+              const Padding(
+                padding: EdgeInsets.all(16),
+                child: SizedBox(width: 22, height: 22, child: CircularProgressIndicator(strokeWidth: 2)),
+              )
+            else
+              Padding(
+                padding: const EdgeInsets.only(right: 12),
+                child: FilledButton(
+                  onPressed: _save,
+                  child: const Text('Save'),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
-                  flex: 3,
-                  child: TextField(
-                    decoration: const InputDecoration(
-                      labelText: 'URL',
-                      border: OutlineInputBorder(),
-                    ),
-                    controller: TextEditingController(text: links[i]['url'] as String? ?? ''),
-                    onChanged: (v) => links[i]['url'] = v,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        TextButton(
-          onPressed: () {
-            links.add({'platform': 'Link', 'url': '', 'icon': 'link'});
-            p['socialLinks'] = links;
-            _setBlock(1, p);
-          },
-          child: const Text('Add social link'),
+              ),
+          ],
         ),
-        TextButton(
-          onPressed: () {
-            p['socialLinks'] = links;
-            _setBlock(1, p);
-            _showSnack('Social links updated');
+        body: _sectionId == null
+            ? _home()
+            : _sectionBody(wide),
+      ),
+    );
+  }
+
+  String _sectionTitle(String id) {
+    for (final s in _sections) {
+      if (s.id == id) return s.title;
+    }
+    return 'Edit';
+  }
+
+  Widget _home() {
+    final sections = _sections;
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        Text(
+          _doc.name.isEmpty ? 'Website' : _doc.name,
+          style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          CategoryType.label(_doc.type),
+          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+        ),
+        const SizedBox(height: 16),
+        for (final section in sections)
+          Card(
+            elevation: 0,
+            margin: const EdgeInsets.only(bottom: 10),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(16),
+              side: BorderSide(color: Theme.of(context).dividerColor),
+            ),
+            child: ListTile(
+              leading: CircleAvatar(
+                backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+                child: Icon(section.icon, color: Theme.of(context).colorScheme.onPrimaryContainer),
+              ),
+              title: Text(section.title, style: const TextStyle(fontWeight: FontWeight.w600)),
+              subtitle: Text(section.subtitle),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () => _openSection(section.id),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _sectionBody(bool wide) {
+    if (_sectionId == 'profile') return _profileForm();
+    final list = _sectionList();
+    final editor = _editIndex == null
+        ? _emptyEditor()
+        : _editorFor(_sectionId!, _editIndex!);
+    if (!wide) {
+      if (_editIndex != null) return editor;
+      return list;
+    }
+    return Row(
+      children: [
+        SizedBox(width: 360, child: list),
+        const VerticalDivider(width: 1),
+        Expanded(child: editor),
+      ],
+    );
+  }
+
+  Widget _emptyEditor() {
+    return const Center(child: Text('Select an item to edit'));
+  }
+
+  Widget _sectionList() {
+    final id = _sectionId!;
+    if (id == 'social') return _socialList();
+    if (id == 'banners') return _bannerList();
+    if (id == 'categories') return _categoryList();
+    if (id == 'items') return _itemList();
+    final parts = id.split(':');
+    return _genericList(int.parse(parts[0]), parts[1]);
+  }
+
+  Widget _editorFor(String id, int index) {
+    if (id == 'social') return _socialEditor(index);
+    if (id == 'banners') return _bannerEditor(index);
+    if (id == 'categories') return _categoryEditor(index);
+    if (id == 'items') return _itemEditor(index);
+    final parts = id.split(':');
+    return _genericEditor(int.parse(parts[0]), parts[1], index);
+  }
+
+  Widget _rowTile({
+    required String title,
+    required String subtitle,
+    required VoidCallback onEdit,
+    required VoidCallback onDelete,
+    Widget? leading,
+    bool selected = false,
+  }) {
+    return ListTile(
+      selected: selected,
+      leading: leading,
+      title: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+      subtitle: Text(subtitle, maxLines: 1, overflow: TextOverflow.ellipsis),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          IconButton(icon: const Icon(Icons.edit_outlined), onPressed: onEdit),
+          IconButton(icon: const Icon(Icons.delete_outline), onPressed: onDelete),
+        ],
+      ),
+      onTap: onEdit,
+    );
+  }
+
+  Widget _socialList() {
+    final links = _list(1, 'socialLinks');
+    return _listScaffold(
+      onAdd: () {
+        links.add({'platform': 'Link', 'url': '', 'icon': 'link'});
+        _writeList(1, 'socialLinks', links);
+        setState(() => _editIndex = links.length - 1);
+      },
+      addLabel: 'Add social link',
+      children: [
+        for (var i = 0; i < links.length; i++)
+          _rowTile(
+            title: links[i]['platform'] as String? ?? 'Link',
+            subtitle: (links[i]['url'] as String? ?? '').isEmpty ? 'No URL yet' : links[i]['url'] as String,
+            selected: _editIndex == i,
+            onEdit: () => setState(() => _editIndex = i),
+            onDelete: () {
+              links.removeAt(i);
+              _writeList(1, 'socialLinks', links);
+              setState(() => _editIndex = null);
+            },
+          ),
+      ],
+    );
+  }
+
+  Widget _socialEditor(int index) {
+    final links = _list(1, 'socialLinks');
+    if (index >= links.length) return _emptyEditor();
+    final item = links[index];
+    return _formPad(
+      children: [
+        TextField(
+          decoration: exportAdminInputDecoration(context, 'Platform'),
+          controller: TextEditingController(text: item['platform'] as String? ?? ''),
+          onChanged: (v) {
+            item['platform'] = v;
+            item['icon'] = v.toLowerCase();
+            links[index] = item;
+            _writeList(1, 'socialLinks', links);
           },
-          child: const Text('Apply social links'),
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          decoration: exportAdminInputDecoration(context, 'URL'),
+          controller: TextEditingController(text: item['url'] as String? ?? ''),
+          onChanged: (v) {
+            item['url'] = v;
+            links[index] = item;
+            _writeList(1, 'socialLinks', links);
+          },
         ),
       ],
     );
   }
 
-  Widget _bannersEditor() {
-    final p = _block(1);
-    final banners = List<Map<String, dynamic>>.from(
-      (p['banners'] as List?)?.whereType<Map<String, dynamic>>() ?? [],
-    );
-    return Column(
+  Widget _bannerList() {
+    final banners = _list(1, 'banners');
+    return _listScaffold(
+      onAdd: () {
+        banners.add({'image': ''});
+        _writeList(1, 'banners', banners);
+        setState(() => _editIndex = banners.length - 1);
+      },
+      addLabel: 'Add banner',
       children: [
         for (var i = 0; i < banners.length; i++)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text('Banner ${i + 1}', style: const TextStyle(fontWeight: FontWeight.w600)),
-                  TextField(
-                    decoration: const InputDecoration(labelText: 'Image URL'),
-                    controller: TextEditingController(text: banners[i]['image'] as String? ?? ''),
-                    onChanged: (v) => banners[i]['image'] = v,
-                  ),
-                  TextButton.icon(
-                    onPressed: () => _pickAndUploadImage((url) {
-                      banners[i]['image'] = url;
-                      p['banners'] = banners;
-                      _setBlock(1, p);
-                    }),
-                    icon: const Icon(Icons.upload),
-                    label: const Text('Upload banner image'),
-                  ),
-                  Align(
-                    alignment: Alignment.centerRight,
-                    child: TextButton(
-                      onPressed: () {
-                        banners.removeAt(i);
-                        p['banners'] = banners;
-                        _setBlock(1, p);
-                      },
-                      child: const Text('Remove'),
-                    ),
-                  ),
-                ],
-              ),
+          _rowTile(
+            title: 'Banner ${i + 1}',
+            subtitle: (banners[i]['image'] as String? ?? '').isEmpty ? 'No image' : 'Image set',
+            selected: _editIndex == i,
+            leading: ExportAdminCompactImageButton(
+              imageUrl: banners[i]['image'] as String?,
+              size: 44,
+              shape: BoxShape.rectangle,
+              onTap: () => setState(() => _editIndex = i),
             ),
+            onEdit: () => setState(() => _editIndex = i),
+            onDelete: () {
+              banners.removeAt(i);
+              _writeList(1, 'banners', banners);
+              setState(() => _editIndex = null);
+            },
           ),
-        OutlinedButton.icon(
-          onPressed: () {
-            banners.add({'image': ''});
-            p['banners'] = banners;
-            _setBlock(1, p);
-          },
-          icon: const Icon(Icons.add),
-          label: const Text('Add banner'),
-        ),
-        TextButton(
-          onPressed: () {
-            p['banners'] = banners;
-            _setBlock(1, p);
-          },
-          child: const Text('Apply banners'),
-        ),
       ],
     );
   }
 
-  Widget _categoriesEditor() {
-    final s = _block(2);
-    final categories = List<Map<String, dynamic>>.from(
-      (s['categories'] as List?)?.whereType<Map<String, dynamic>>() ?? [],
-    );
-    return Column(
+  Widget _bannerEditor(int index) {
+    final banners = _list(1, 'banners');
+    if (index >= banners.length) return _emptyEditor();
+    return _formPad(
       children: [
-        for (var i = 0; i < categories.length; i++)
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: Column(
-                children: [
-                  TextField(
-                    decoration: const InputDecoration(labelText: 'Category name'),
-                    controller: TextEditingController(text: categories[i]['name'] as String? ?? ''),
-                    onChanged: (v) => categories[i]['name'] = v,
-                  ),
-                  TextField(
-                    decoration: const InputDecoration(labelText: 'Image URL'),
-                    controller: TextEditingController(text: categories[i]['image'] as String? ?? ''),
-                    onChanged: (v) => categories[i]['image'] = v,
-                  ),
-                  TextButton.icon(
-                    onPressed: () => _pickAndUploadImage((url) {
-                      categories[i]['image'] = url;
-                      s['categories'] = categories;
-                      _setBlock(2, s);
-                    }),
-                    icon: const Icon(Icons.upload),
-                    label: const Text('Upload category photo'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      categories.removeAt(i);
-                      s['categories'] = categories;
-                      _setBlock(2, s);
-                    },
-                    child: const Text('Remove category'),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        OutlinedButton.icon(
-          onPressed: () {
-            categories.add({'name': 'New category', 'image': ''});
-            s['categories'] = categories;
-            _setBlock(2, s);
-          },
-          icon: const Icon(Icons.add),
-          label: const Text('Add category'),
+        ExportAdminEditableImage(
+          imageUrl: banners[index]['image'] as String?,
+          height: 140,
+          onChange: () => _pickAndUploadImage((url) {
+            banners[index]['image'] = url;
+            _writeList(1, 'banners', banners);
+          }),
         ),
       ],
     );
   }
 
-  Widget _productsEditor() {
-    final t = _block(3);
-    final items = List<Map<String, dynamic>>.from(
-      (t[_itemsKey] as List?)?.whereType<Map<String, dynamic>>() ?? [],
+  Widget _categoryList() {
+    final cats = _list(2, 'categories');
+    return _listScaffold(
+      onAdd: () {
+        cats.add({'name': 'New category', 'image': ''});
+        _writeList(2, 'categories', cats);
+        setState(() => _editIndex = cats.length - 1);
+      },
+      addLabel: 'Add category',
+      children: [
+        for (var i = 0; i < cats.length; i++)
+          _rowTile(
+            title: cats[i]['name'] as String? ?? 'Category',
+            subtitle: (cats[i]['image'] as String? ?? '').isEmpty ? 'No photo' : 'Photo set',
+            selected: _editIndex == i,
+            leading: ExportAdminCompactImageButton(
+              imageUrl: cats[i]['image'] as String?,
+              size: 44,
+              shape: BoxShape.rectangle,
+              onTap: () => setState(() => _editIndex = i),
+            ),
+            onEdit: () => setState(() => _editIndex = i),
+            onDelete: () {
+              cats.removeAt(i);
+              _writeList(2, 'categories', cats);
+              setState(() => _editIndex = null);
+            },
+          ),
+      ],
     );
-    final categoryNames = List<String>.from(
-      ((_block(2)['categories'] as List?) ?? [])
-          .whereType<Map<String, dynamic>>()
-          .map((c) => c['name'] as String? ?? '')
-          .where((n) => n.isNotEmpty),
-    );
+  }
 
-    return Column(
+  Widget _categoryEditor(int index) {
+    final cats = _list(2, 'categories');
+    if (index >= cats.length) return _emptyEditor();
+    return _formPad(
+      children: [
+        ExportAdminEditableImage(
+          imageUrl: cats[index]['image'] as String?,
+          height: 120,
+          width: 160,
+          onChange: () => _pickAndUploadImage((url) {
+            cats[index]['image'] = url;
+            _writeList(2, 'categories', cats);
+          }),
+        ),
+        TextField(
+          decoration: exportAdminInputDecoration(context, 'Name'),
+          controller: TextEditingController(text: cats[index]['name'] as String? ?? ''),
+          onChanged: (v) {
+            cats[index]['name'] = v;
+            _writeList(2, 'categories', cats);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _itemList() {
+    final items = _list(3, _itemsKey);
+    return _listScaffold(
+      onAdd: () {
+        final cats = _list(2, 'categories');
+        if (cats.isEmpty) {
+          _showSnack('Add a category first.');
+          return;
+        }
+        items.add({
+          'name': 'New item',
+          'category': cats.first['name'],
+          'price': 0,
+          'discount': 0,
+          'description': '',
+          'image': '',
+          'images': <String>[],
+        });
+        _writeList(3, _itemsKey, items);
+        setState(() => _editIndex = items.length - 1);
+      },
+      addLabel: 'Add item',
       children: [
         for (var i = 0; i < items.length; i++)
-          Card(
-            margin: const EdgeInsets.only(bottom: 12),
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: _ProductEditorCard(
-                item: items[i],
-                categories: categoryNames,
-                onChanged: (next) {
-                  items[i] = next;
-                  t[_itemsKey] = items;
-                  _setBlock(3, t);
-                },
-                onRemove: () {
-                  items.removeAt(i);
-                  t[_itemsKey] = items;
-                  _setBlock(3, t);
-                },
-                onUploadImage: (onUrl) => _pickAndUploadImage(onUrl),
-              ),
+          _rowTile(
+            title: items[i]['name'] as String? ?? 'Item',
+            subtitle: items[i]['category'] as String? ?? '',
+            selected: _editIndex == i,
+            leading: ExportAdminCompactImageButton(
+              imageUrl: items[i]['image'] as String?,
+              size: 44,
+              shape: BoxShape.rectangle,
+              onTap: () => setState(() => _editIndex = i),
             ),
+            onEdit: () => setState(() => _editIndex = i),
+            onDelete: () {
+              items.removeAt(i);
+              _writeList(3, _itemsKey, items);
+              setState(() => _editIndex = null);
+            },
           ),
-        OutlinedButton.icon(
-          onPressed: () {
-            if (categoryNames.isEmpty) {
-              _showSnack('Add at least one category first.');
-              return;
-            }
-            items.add({
-              'name': 'New item',
-              'category': categoryNames.first,
-              'price': 0,
-              'discount': 0,
-              'description': '',
-              'image': '',
-              'images': <String>[],
-            });
-            t[_itemsKey] = items;
-            _setBlock(3, t);
-          },
-          icon: const Icon(Icons.add),
-          label: const Text('Add product / menu item'),
-        ),
       ],
     );
   }
-}
 
-class _ProductEditorCard extends StatelessWidget {
-  const _ProductEditorCard({
-    required this.item,
-    required this.categories,
-    required this.onChanged,
-    required this.onRemove,
-    required this.onUploadImage,
-  });
-
-  final Map<String, dynamic> item;
-  final List<String> categories;
-  final ValueChanged<Map<String, dynamic>> onChanged;
-  final VoidCallback onRemove;
-  final Future<void> Function(void Function(String url) onUrl) onUploadImage;
-
-  List<String> _images() {
-    final list = <String>[];
+  Widget _itemEditor(int index) {
+    final items = _list(3, _itemsKey);
+    if (index >= items.length) return _emptyEditor();
+    final item = Map<String, dynamic>.from(items[index]);
+    final categories = _list(2, 'categories')
+        .map((c) => c['name'] as String? ?? '')
+        .where((n) => n.isNotEmpty)
+        .toList();
+    final images = <String>[];
     final extra = item['images'];
     if (extra is List) {
       for (final e in extra) {
-        if (e is String && e.isNotEmpty) list.add(e);
+        if (e is String && e.isNotEmpty) images.add(e);
       }
     }
     final primary = item['image'] as String?;
-    if (primary != null && primary.isNotEmpty && !list.contains(primary)) {
-      list.insert(0, primary);
+    if (primary != null && primary.isNotEmpty && !images.contains(primary)) {
+      images.insert(0, primary);
     }
-    return list;
-  }
+    void commit() {
+      items[index] = item;
+      _writeList(3, _itemsKey, items);
+    }
 
-  @override
-  Widget build(BuildContext context) {
-    final images = _images();
-    final category = item['category'] as String? ?? '';
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
+    return _formPad(
       children: [
         TextField(
-          decoration: const InputDecoration(labelText: 'Name'),
+          decoration: exportAdminInputDecoration(context, 'Name'),
           controller: TextEditingController(text: item['name'] as String? ?? ''),
           onChanged: (v) {
             item['name'] = v;
-            onChanged(Map<String, dynamic>.from(item));
+            commit();
           },
         ),
-        const SizedBox(height: 8),
+        const SizedBox(height: 10),
         DropdownButtonFormField<String>(
-          value: categories.contains(category) ? category : (categories.isNotEmpty ? categories.first : null),
-          decoration: const InputDecoration(labelText: 'Category (required)', border: OutlineInputBorder()),
+          initialValue: categories.contains(item['category']) ? item['category'] as String : (categories.isEmpty ? null : categories.first),
+          decoration: exportAdminInputDecoration(context, 'Category'),
           items: categories.map((c) => DropdownMenuItem(value: c, child: Text(c))).toList(),
-          onChanged: categories.isEmpty
-              ? null
-              : (v) {
-                  if (v == null) return;
-                  item['category'] = v;
-                  onChanged(Map<String, dynamic>.from(item));
-                },
-        ),
-        TextField(
-          decoration: const InputDecoration(labelText: 'Description'),
-          controller: TextEditingController(text: item['description'] as String? ?? ''),
           onChanged: (v) {
-            item['description'] = v;
-            onChanged(Map<String, dynamic>.from(item));
+            if (v == null) return;
+            item['category'] = v;
+            commit();
           },
         ),
+        const SizedBox(height: 12),
+        SizedBox(
+          height: 64,
+          child: ListView(
+            scrollDirection: Axis.horizontal,
+            children: [
+              for (var i = 0; i < images.length; i++)
+                Padding(
+                  padding: const EdgeInsets.only(right: 8),
+                  child: ExportAdminImageThumb(
+                    url: images[i],
+                    size: 72,
+                    onTap: () => _pickAndUploadImage((url) {
+                      images[i] = url;
+                      item['images'] = images;
+                      item['image'] = images.first;
+                      commit();
+                    }),
+                    onRemove: () {
+                      images.removeAt(i);
+                      item['images'] = images;
+                      item['image'] = images.isEmpty ? '' : images.first;
+                      commit();
+                    },
+                  ),
+                ),
+              if (images.length < 5)
+                ExportAdminAddTile(
+                  label: 'Photo',
+                  width: 64,
+                  height: 64,
+                  onTap: () => _pickAndUploadImage((url) {
+                    images.add(url);
+                    item['images'] = images;
+                    item['image'] = images.first;
+                    commit();
+                  }),
+                ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        ExportAdminReelSlot(
+          videoUrl: item['videoUrl'] as String?,
+          onUrlChanged: (v) {
+            item['videoUrl'] = v;
+            commit();
+          },
+        ),
+        const SizedBox(height: 10),
         TextField(
-          decoration: const InputDecoration(labelText: 'Price'),
+          decoration: exportAdminInputDecoration(context, 'Price'),
           controller: TextEditingController(text: '${item['price'] ?? ''}'),
           onChanged: (v) {
             item['price'] = num.tryParse(v) ?? v;
-            onChanged(Map<String, dynamic>.from(item));
+            commit();
           },
         ),
+        const SizedBox(height: 10),
         TextField(
-          decoration: const InputDecoration(labelText: 'Discount %'),
-          controller: TextEditingController(text: '${item['discount'] ?? 0}'),
+          decoration: exportAdminInputDecoration(context, 'Description'),
+          maxLines: 2,
+          controller: TextEditingController(text: item['description'] as String? ?? ''),
           onChanged: (v) {
-            item['discount'] = num.tryParse(v) ?? 0;
-            onChanged(Map<String, dynamic>.from(item));
+            item['description'] = v;
+            commit();
           },
-        ),
-        const SizedBox(height: 8),
-        Text('Photos (max 5)', style: Theme.of(context).textTheme.titleSmall),
-        for (var i = 0; i < images.length; i++)
-          ListTile(
-            title: Text(images[i], maxLines: 1, overflow: TextOverflow.ellipsis),
-            trailing: IconButton(
-              icon: const Icon(Icons.delete_outline),
-              onPressed: () {
-                images.removeAt(i);
-                item['images'] = images;
-                item['image'] = images.isNotEmpty ? images.first : '';
-                onChanged(Map<String, dynamic>.from(item));
-              },
-            ),
-          ),
-        if (images.length < 5)
-          TextButton.icon(
-            onPressed: () => onUploadImage((url) {
-              final next = [...images, url];
-              item['images'] = next;
-              item['image'] = next.first;
-              onChanged(Map<String, dynamic>.from(item));
-            }),
-            icon: const Icon(Icons.upload),
-            label: const Text('Upload photo'),
-          ),
-        TextField(
-          decoration: const InputDecoration(
-            labelText: 'Video URL (optional, max 1)',
-            hintText: 'Google Drive or direct MP4 link',
-          ),
-          controller: TextEditingController(text: item['videoUrl'] as String? ?? ''),
-          onChanged: (v) {
-            item['videoUrl'] = v.trim().isEmpty ? null : v.trim();
-            onChanged(Map<String, dynamic>.from(item));
-          },
-        ),
-        Align(
-          alignment: Alignment.centerRight,
-          child: TextButton(onPressed: onRemove, child: const Text('Remove product')),
         ),
       ],
+    );
+  }
+
+  Widget _genericList(int block, String key) {
+    final items = _list(block, key);
+    return _listScaffold(
+      onAdd: () {
+        items.add(_blankLikeExisting(items));
+        _writeList(block, key, items);
+        setState(() => _editIndex = items.length - 1);
+      },
+      addLabel: 'Add',
+      children: [
+        for (var i = 0; i < items.length; i++)
+          _rowTile(
+            title: _itemTitle(items[i]),
+            subtitle: _itemSubtitle(items[i]),
+            selected: _editIndex == i,
+            onEdit: () => setState(() => _editIndex = i),
+            onDelete: () {
+              items.removeAt(i);
+              _writeList(block, key, items);
+              setState(() => _editIndex = null);
+            },
+          ),
+      ],
+    );
+  }
+
+  Map<String, dynamic> _blankLikeExisting(List<Map<String, dynamic>> items) {
+    if (items.isEmpty) return {'title': 'New'};
+    final keys = <String>{};
+    for (final item in items) {
+      keys.addAll(item.keys);
+    }
+    keys.remove('theme');
+    final sample = items.first;
+    final blank = <String, dynamic>{};
+    for (final key in keys) {
+      final value = sample[key] ?? items.map((e) => e[key]).firstWhere((v) => v != null, orElse: () => '');
+      if (value is int) {
+        blank[key] = 0;
+      } else if (value is double) {
+        blank[key] = 0.0;
+      } else if (value is num) {
+        blank[key] = 0;
+      } else if (value is bool) {
+        blank[key] = false;
+      } else if (value is List) {
+        blank[key] = <dynamic>[];
+      } else if (value is Map) {
+        blank[key] = <String, dynamic>{};
+      } else if (key == 'name' || key == 'title') {
+        blank[key] = 'New';
+      } else {
+        blank[key] = '';
+      }
+    }
+    return blank;
+  }
+
+  String _itemTitle(Map<String, dynamic> item) {
+    for (final k in ['name', 'title', 'platform', 'degree', 'quote']) {
+      final v = item[k];
+      if (v is String && v.isNotEmpty) return v;
+    }
+    return 'Item';
+  }
+
+  String _itemSubtitle(Map<String, dynamic> item) {
+    for (final k in ['category', 'role', 'description', 'url', 'address']) {
+      final v = item[k];
+      if (v is String && v.isNotEmpty) return v;
+    }
+    return '';
+  }
+
+  Widget _genericEditor(int block, String key, int index) {
+    final items = _list(block, key);
+    if (index >= items.length) return _emptyEditor();
+    final item = Map<String, dynamic>.from(items[index]);
+    final fields = <String>{};
+    for (final row in items) {
+      fields.addAll(row.keys);
+    }
+    fields.remove('theme');
+    return _formPad(
+      children: [
+        for (final field in fields) ...[
+          if (_fieldIsImage(items, field))
+            ExportAdminEditableImage(
+              imageUrl: item[field] as String? ?? '',
+              height: 150,
+              onChange: () => _pickAndUploadImage((url) {
+                item[field] = url;
+                items[index] = item;
+                _writeList(block, key, items);
+              }),
+            )
+          else if (_fieldIsText(items, field))
+            Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: TextField(
+                decoration: exportAdminInputDecoration(context, _label(field)),
+                controller: TextEditingController(text: '${item[field] ?? ''}'),
+                onChanged: (v) {
+                  final sample = items.map((e) => e[field]).firstWhere((value) => value != null, orElse: () => '');
+                  item[field] = sample is num ? (num.tryParse(v) ?? v) : v;
+                  items[index] = item;
+                  _writeList(block, key, items);
+                },
+              ),
+            ),
+        ],
+      ],
+    );
+  }
+
+  bool _fieldIsImage(List<Map<String, dynamic>> items, String field) {
+    final key = field.toLowerCase();
+    if (key.contains('image') || key == 'logo' || key == 'photo') return true;
+    for (final row in items) {
+      final value = row[field];
+      if (value is String && (value.startsWith('http') || value.startsWith('assets/'))) {
+        return key.contains('image') || key == 'logo' || key == 'photo';
+      }
+    }
+    return false;
+  }
+
+  bool _fieldIsText(List<Map<String, dynamic>> items, String field) {
+    if (_fieldIsImage(items, field)) return false;
+    for (final row in items) {
+      final value = row[field];
+      if (value is String || value is num) return true;
+    }
+    return false;
+  }
+
+  Widget _profileForm() {
+    final p = _block(1);
+    final name = p[_titleKey] as String? ?? _doc.name;
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: [
+        Row(
+          children: [
+            ExportAdminEditableImage(
+              imageUrl: _doc.logo.isEmpty ? p['logo'] as String? : _doc.logo,
+              width: 72,
+              height: 72,
+              onChange: () => _pickAndUploadImage((url) {
+                setState(() => _doc = _doc.copyWith(logo: url));
+                final next = _block(1);
+                next['logo'] = url;
+                _setBlock(1, next);
+              }),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: TextField(
+                decoration: exportAdminInputDecoration(context, 'Name'),
+                controller: TextEditingController(text: name),
+                onChanged: (v) {
+                  final next = _block(1);
+                  next[_titleKey] = v;
+                  _setBlock(1, next);
+                  setState(() => _doc = _doc.copyWith(name: v));
+                },
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          decoration: exportAdminInputDecoration(context, 'Tagline'),
+          controller: TextEditingController(text: p['tagline'] as String? ?? ''),
+          onChanged: (v) {
+            final next = _block(1);
+            next['tagline'] = v;
+            _setBlock(1, next);
+          },
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          decoration: exportAdminInputDecoration(context, 'Phone'),
+          controller: TextEditingController(text: p['phone'] as String? ?? ''),
+          onChanged: (v) {
+            final next = _block(1);
+            next['phone'] = v;
+            _setBlock(1, next);
+          },
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          decoration: exportAdminInputDecoration(context, 'Email'),
+          controller: TextEditingController(text: p['email'] as String? ?? ''),
+          onChanged: (v) {
+            final next = _block(1);
+            next['email'] = v;
+            _setBlock(1, next);
+          },
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          decoration: exportAdminInputDecoration(context, 'Address'),
+          controller: TextEditingController(text: p['address'] as String? ?? ''),
+          onChanged: (v) {
+            final next = _block(1);
+            next['address'] = v;
+            _setBlock(1, next);
+          },
+        ),
+        const SizedBox(height: 12),
+        TextField(
+          decoration: exportAdminInputDecoration(context, 'WhatsApp'),
+          controller: TextEditingController(text: p['whatsapp'] as String? ?? ''),
+          onChanged: (v) {
+            final next = _block(1);
+            next['whatsapp'] = v;
+            _setBlock(1, next);
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _listScaffold({
+    required VoidCallback onAdd,
+    required String addLabel,
+    required List<Widget> children,
+  }) {
+    return Column(
+      children: [
+        Expanded(child: ListView(children: children)),
+        Padding(
+          padding: const EdgeInsets.all(12),
+          child: SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(onPressed: onAdd, icon: const Icon(Icons.add), label: Text(addLabel)),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _formPad({required List<Widget> children}) {
+    return ListView(
+      padding: const EdgeInsets.all(20),
+      children: children,
     );
   }
 }

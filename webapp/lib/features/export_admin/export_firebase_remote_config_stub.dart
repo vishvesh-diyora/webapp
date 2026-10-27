@@ -1,9 +1,9 @@
 import 'package:webapp/features/export_admin/export_firebase_web_config.dart';
-import 'package:webapp/features/export_admin/export_runtime_config.dart';
+import 'package:webapp/features/export_admin/export_viewer_config_load_result.dart';
 
-Future<ExportRuntimeConfig?> tryLoadConfigFromFirebaseRemote(
+Future<ExportViewerConfigLoadResult?> tryLoadSecretsFromFirebaseRemote(
   ExportFirebaseWebConfig webConfig, {
-  String siteDataUrlFallback = 'site.json',
+  required String siteDataUrlFallback,
 }) async {
   return null;
 }

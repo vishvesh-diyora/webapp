@@ -4,52 +4,49 @@ import 'package:http/http.dart' as http;
 import 'package:uuid/uuid.dart';
 import 'package:web/web.dart' as web;
 import 'package:webapp/features/export_admin/export_firebase_web_config.dart';
+import 'package:webapp/features/export_admin/export_remote_config_keys.dart';
 import 'package:webapp/features/export_admin/export_runtime_config.dart';
+import 'package:webapp/features/export_admin/export_viewer_config_load_result.dart';
 
-/// Remote Config parameter keys (set values in Firebase Console → Remote Config).
-abstract final class ExportRemoteConfigKeys {
-  static const adminUsername = 'admin_username';
-  static const adminPassword = 'admin_password';
-  static const siteDataUrl = 'site_data_url';
-  static const githubOwner = 'github_owner';
-  static const githubRepo = 'github_repo';
-  static const githubBranch = 'github_branch';
-  static const githubToken = 'github_token';
-  static const githubSiteJsonPath = 'github_site_json_path';
-  static const githubMediaFolder = 'github_media_folder';
-}
-
-Future<ExportRuntimeConfig?> tryLoadConfigFromFirebaseRemote(
+Future<ExportViewerConfigLoadResult?> tryLoadSecretsFromFirebaseRemote(
   ExportFirebaseWebConfig webConfig, {
-  String siteDataUrlFallback = 'site.json',
+  required String siteDataUrlFallback,
 }) async {
   if (!webConfig.isConfigured) return null;
 
-  final appInstanceId = _stableAppInstanceId();
-  final uri = Uri.parse(
-    'https://firebaseremoteconfig.googleapis.com/v1/projects/${webConfig.projectId}/namespaces/firebase:fetch',
-  ).replace(queryParameters: {'key': webConfig.apiKey});
+  Map<String, dynamic> entries;
+  String? fetchError;
 
-  final response = await http.post(
-    uri,
-    headers: {'Content-Type': 'application/json'},
-    body: jsonEncode({
-      'appId': webConfig.appId,
-      'appInstanceId': appInstanceId,
-    }),
-  );
+  try {
+    final appInstanceId = _stableAppInstanceId();
+    final uri = Uri.parse(
+      'https://firebaseremoteconfig.googleapis.com/v1/projects/${webConfig.projectId}/namespaces/firebase:fetch',
+    ).replace(queryParameters: {'key': webConfig.apiKey});
 
-  if (response.statusCode != 200) {
-    throw StateError(
-      'Remote Config fetch failed (${response.statusCode}): ${response.body}',
+    final response = await http.post(
+      uri,
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'appId': webConfig.appId,
+        'appInstanceId': appInstanceId,
+      }),
     );
-  }
 
-  final decoded = jsonDecode(response.body) as Map<String, dynamic>;
-  final entriesRaw = decoded['entries'];
-  final entries = entriesRaw is Map
-      ? Map<String, dynamic>.from(entriesRaw)
-      : <String, dynamic>{};
+    if (response.statusCode != 200) {
+      fetchError =
+          'Remote Config fetch failed (${response.statusCode}). Check firebase-config.json and enable Remote Config for this web app.';
+      entries = {};
+    } else {
+      final decoded = jsonDecode(response.body) as Map<String, dynamic>;
+      final entriesRaw = decoded['entries'];
+      entries = entriesRaw is Map
+          ? Map<String, dynamic>.from(entriesRaw)
+          : <String, dynamic>{};
+    }
+  } catch (e) {
+    fetchError = 'Remote Config error: $e';
+    entries = {};
+  }
 
   String param(String key, {String fallback = ''}) {
     final raw = entries[key];
@@ -62,16 +59,25 @@ Future<ExportRuntimeConfig?> tryLoadConfigFromFirebaseRemote(
     return fallback;
   }
 
-  final adminUsername = param(ExportRemoteConfigKeys.adminUsername);
-  final adminPassword = param(ExportRemoteConfigKeys.adminPassword);
-  if (adminUsername.isEmpty || adminPassword.isEmpty) {
-    throw StateError(
-      'Firebase Remote Config: set ${ExportRemoteConfigKeys.adminUsername} and '
-      '${ExportRemoteConfigKeys.adminPassword} in the Firebase console.',
-    );
+  final missingLogin = <String>[];
+  for (final key in ExportRemoteConfigKeys.loginKeys) {
+    if (param(key).isEmpty) missingLogin.add(key);
   }
 
+  final missingGithub = <String>[];
+  for (final key in ExportRemoteConfigKeys.githubKeys) {
+    if (key == ExportRemoteConfigKeys.githubBranch ||
+        key == ExportRemoteConfigKeys.githubSiteJsonPath ||
+        key == ExportRemoteConfigKeys.githubMediaFolder) {
+      continue;
+    }
+    if (param(key).isEmpty) missingGithub.add(key);
+  }
+
+  final adminUsername = param(ExportRemoteConfigKeys.adminUsername);
+  final adminPassword = param(ExportRemoteConfigKeys.adminPassword);
   final siteDataUrl = param(ExportRemoteConfigKeys.siteDataUrl, fallback: siteDataUrlFallback);
+
   final github = ExportGithubConfig(
     owner: param(ExportRemoteConfigKeys.githubOwner),
     repo: param(ExportRemoteConfigKeys.githubRepo),
@@ -81,12 +87,21 @@ Future<ExportRuntimeConfig?> tryLoadConfigFromFirebaseRemote(
     token: param(ExportRemoteConfigKeys.githubToken),
   );
 
-  return ExportRuntimeConfig(
+  final config = ExportRuntimeConfig(
     siteDataUrl: siteDataUrl.isNotEmpty ? siteDataUrl : siteDataUrlFallback,
     adminUsername: adminUsername,
     adminPassword: adminPassword,
     github: github.isConfigured ? github : null,
     secretsFromFirebase: true,
+  );
+
+  return ExportViewerConfigLoadResult(
+    config: config,
+    missingRemoteConfigKeys: missingLogin,
+    missingGithubKeys: missingGithub,
+    remoteConfigError: fetchError,
+    firebaseWebConfigMissing: false,
+    usedFirebaseRemoteConfig: true,
   );
 }
 
