@@ -290,7 +290,26 @@ class _ExportAdminEditorScreenState extends State<ExportAdminEditorScreen> {
   }
 
   Widget _emptyEditor() {
-    return const Center(child: Text('Select an item to edit'));
+    final theme = Theme.of(context);
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.touch_app_outlined, size: 48, color: theme.colorScheme.outline),
+            const SizedBox(height: 12),
+            Text('Select an item to edit', style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+            const SizedBox(height: 6),
+            Text(
+              'Choose a row on the left, or tap Add to create something new.',
+              textAlign: TextAlign.center,
+              style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onSurfaceVariant),
+            ),
+          ],
+        ),
+      ),
+    );
   }
 
   Widget _sectionList() {

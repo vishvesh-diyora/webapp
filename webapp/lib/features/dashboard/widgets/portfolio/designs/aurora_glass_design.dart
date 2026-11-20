@@ -28,7 +28,11 @@ class AuroraGlassDesign extends StatelessWidget {
           child: DecoratedBox(
             decoration: BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF0F172A), Color(0xFF1E1B4B), Color(0xFF312E81)],
+                colors: [
+                  Color(0xFF0F172A),
+                  Color(0xFF1E1B4B),
+                  Color(0xFF312E81),
+                ],
               ),
             ),
           ),
@@ -47,33 +51,43 @@ class AuroraGlassDesign extends StatelessWidget {
   }
 
   List<Widget> _orbs(bool c) => [
-        Positioned(top: c ? -20 : -40, right: c ? -30 : -60, child: _orb(c ? 120 : 180, const Color(0xFF06B6D4))),
-        Positioned(bottom: c ? 40 : 80, left: c ? -20 : -40, child: _orb(c ? 100 : 160, const Color(0xFFEC4899))),
-      ];
+    Positioned(
+      top: c ? -20 : -40,
+      right: c ? -30 : -60,
+      child: _orb(c ? 120 : 180, const Color(0xFF06B6D4)),
+    ),
+    Positioned(
+      bottom: c ? 40 : 80,
+      left: c ? -20 : -40,
+      child: _orb(c ? 100 : 160, const Color(0xFFEC4899)),
+    ),
+  ];
 
   Widget _orb(double s, Color c) => Container(
-        width: s,
-        height: s,
-        decoration: BoxDecoration(
-          shape: BoxShape.circle,
-          gradient: RadialGradient(colors: [c.withValues(alpha: 0.45), Colors.transparent]),
-        ),
-      );
+    width: s,
+    height: s,
+    decoration: BoxDecoration(
+      shape: BoxShape.circle,
+      gradient: RadialGradient(
+        colors: [c.withValues(alpha: 0.45), Colors.transparent],
+      ),
+    ),
+  );
 
   Widget _glass({required Widget child, required bool c}) => ClipRRect(
-        borderRadius: BorderRadius.circular(c ? 16 : 20),
-        child: BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
-          child: Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.07),
-              borderRadius: BorderRadius.circular(c ? 16 : 20),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
-            ),
-            child: child,
-          ),
+    borderRadius: BorderRadius.circular(c ? 16 : 20),
+    child: BackdropFilter(
+      filter: ImageFilter.blur(sigmaX: 14, sigmaY: 14),
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(c ? 16 : 20),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.12)),
         ),
-      );
+        child: child,
+      ),
+    ),
+  );
 
   Widget _hero(bool c) {
     final p = PortfolioDesignHelpers.profile;
@@ -84,7 +98,9 @@ class AuroraGlassDesign extends StatelessWidget {
     );
 
     final inner = Column(
-      crossAxisAlignment: mobileProfileLayout ? CrossAxisAlignment.center : CrossAxisAlignment.start,
+      crossAxisAlignment: mobileProfileLayout
+          ? CrossAxisAlignment.center
+          : CrossAxisAlignment.start,
       children: [
         if (mobileProfileLayout) ...[avatar, SizedBox(height: c ? 14 : 18)],
         PortfolioNameBlock(
@@ -98,13 +114,21 @@ class AuroraGlassDesign extends StatelessWidget {
         Text(
           p.title,
           textAlign: mobileProfileLayout ? TextAlign.center : TextAlign.start,
-          style: TextStyle(color: const Color(0xFF06B6D4), fontSize: c ? 13 : 16, fontWeight: FontWeight.w600),
+          style: TextStyle(
+            color: const Color(0xFF06B6D4),
+            fontSize: c ? 13 : 16,
+            fontWeight: FontWeight.w600,
+          ),
         ),
         SizedBox(height: c ? 10 : 14),
         Text(
           p.bio,
           textAlign: mobileProfileLayout ? TextAlign.center : TextAlign.start,
-          style: TextStyle(color: Colors.white70, fontSize: c ? 11 : 13, height: 1.45),
+          style: TextStyle(
+            color: Colors.white70,
+            fontSize: c ? 11 : 13,
+            height: 1.45,
+          ),
         ),
         SizedBox(height: c ? 14 : 18),
         PortfolioSocialBar(
@@ -117,7 +141,10 @@ class AuroraGlassDesign extends StatelessWidget {
     );
 
     return Padding(
-      padding: PortfolioDesignHelpers.heroPadding(pad: pad, mobileProfileLayout: mobileProfileLayout),
+      padding: PortfolioDesignHelpers.heroPadding(
+        pad: pad,
+        mobileProfileLayout: mobileProfileLayout,
+      ),
       child: _glass(
         c: c,
         child: Padding(
@@ -137,14 +164,23 @@ class AuroraGlassDesign extends StatelessWidget {
   }
 
   Widget _reviews(bool c) {
+    final testimonials = PortfolioDesignHelpers.testimonials;
+    if (testimonials.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: c ? 16 : 24),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('Reviews', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: c ? 14 : 16)),
+          Text(
+            'Reviews',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.bold,
+              fontSize: c ? 14 : 16,
+            ),
+          ),
           SizedBox(height: c ? 10 : 12),
-          for (var i = 0; i < 2; i++)
+          for (var i = 0; i < testimonials.length && i < 2; i++)
             Padding(
               padding: EdgeInsets.only(bottom: c ? 8 : 10),
               child: PortfolioListReveal(
@@ -158,7 +194,10 @@ class AuroraGlassDesign extends StatelessWidget {
                       PortfolioDesignHelpers.testimonials[i].quote,
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(color: Colors.white70, fontSize: c ? 10 : 12),
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: c ? 10 : 12,
+                      ),
                     ),
                   ),
                 ),
@@ -191,11 +230,19 @@ class AuroraGlassDesign extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Icon(PortfolioDesignHelpers.projects[i].icon, color: const Color(0xFF06B6D4), size: c ? 20 : 24),
+                      Icon(
+                        PortfolioDesignHelpers.projects[i].icon,
+                        color: const Color(0xFF06B6D4),
+                        size: c ? 20 : 24,
+                      ),
                       const Spacer(),
                       Text(
                         PortfolioDesignHelpers.projects[i].title,
-                        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600, fontSize: c ? 10 : 12),
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w600,
+                          fontSize: c ? 10 : 12,
+                        ),
                       ),
                     ],
                   ),

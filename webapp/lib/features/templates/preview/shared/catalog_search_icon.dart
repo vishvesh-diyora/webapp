@@ -11,12 +11,15 @@ abstract final class CatalogSearchIcon {
     required VoidCallback onPressed,
   }) {
     final side = compact ? 40.0 : 44.0;
+    final lowContrast =
+        (theme.primary.computeLuminance() - theme.background.computeLuminance()).abs() < 0.12;
+    final tint = lowContrast ? theme.text : theme.primary;
     return IconButton(
       onPressed: onPressed,
       tooltip: 'Search products',
       style: IconButton.styleFrom(
-        backgroundColor: theme.primary.withValues(alpha: 0.1),
-        foregroundColor: theme.primary,
+        backgroundColor: tint.withValues(alpha: 0.1),
+        foregroundColor: tint,
         disabledForegroundColor: theme.text.withValues(alpha: 0.4),
         shape: const CircleBorder(),
         minimumSize: Size(side, side),

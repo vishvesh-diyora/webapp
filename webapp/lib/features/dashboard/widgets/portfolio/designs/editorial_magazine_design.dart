@@ -36,7 +36,9 @@ class EditorialMagazineDesign extends StatelessWidget {
 
   Widget _hero(bool c) {
     final p = PortfolioDesignHelpers.profile;
-    final parts = p.name.split(' ');
+    final parts = p.name.trim().isEmpty
+        ? const ['Your']
+        : p.name.trim().split(RegExp(r'\s+'));
     final first = parts.first;
     final last = parts.length > 1 ? parts.sublist(1).join(' ') : '';
 
@@ -64,9 +66,23 @@ class EditorialMagazineDesign extends StatelessWidget {
                     child: PortfolioAvatar(profile: p, size: c ? 100 : 120),
                   ),
                   SizedBox(height: c ? 12 : 16),
-                  Text(first, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: c ? 36 : 44)),
+                  Text(
+                    first,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.w900,
+                      fontSize: c ? 36 : 44,
+                    ),
+                  ),
                   if (last.isNotEmpty)
-                    Text(last, style: TextStyle(color: _yellow, fontWeight: FontWeight.w900, fontSize: c ? 36 : 44)),
+                    Text(
+                      last,
+                      style: TextStyle(
+                        color: _yellow,
+                        fontWeight: FontWeight.w900,
+                        fontSize: c ? 36 : 44,
+                      ),
+                    ),
                 ],
               ),
             ),
@@ -76,11 +92,30 @@ class EditorialMagazineDesign extends StatelessWidget {
               padding: EdgeInsets.all(c ? 16 : 24),
               child: Column(
                 children: [
-                  Text(p.title.toUpperCase(), style: TextStyle(color: _yellow, letterSpacing: 2, fontSize: c ? 10 : 12)),
+                  Text(
+                    p.title.toUpperCase(),
+                    style: TextStyle(
+                      color: _yellow,
+                      letterSpacing: 2,
+                      fontSize: c ? 10 : 12,
+                    ),
+                  ),
                   SizedBox(height: c ? 10 : 14),
-                  Text(p.bio, textAlign: TextAlign.center, style: TextStyle(color: Colors.white70, fontSize: c ? 11 : 13)),
+                  Text(
+                    p.bio,
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      color: Colors.white70,
+                      fontSize: c ? 11 : 13,
+                    ),
+                  ),
                   SizedBox(height: c ? 14 : 18),
-                  PortfolioSocialBar(links: p.socialLinks, compact: c, variant: SocialBarVariant.brutalist, centered: true),
+                  PortfolioSocialBar(
+                    links: p.socialLinks,
+                    compact: c,
+                    variant: SocialBarVariant.brutalist,
+                    centered: true,
+                  ),
                 ],
               ),
             ),
@@ -99,15 +134,40 @@ class EditorialMagazineDesign extends StatelessWidget {
               flex: 3,
               child: Container(
                 color: _red,
-                padding: EdgeInsets.fromLTRB(c ? 20 : 28, c ? 28 : 40, c ? 12 : 16, c ? 60 : 80),
+                padding: EdgeInsets.fromLTRB(
+                  c ? 20 : 28,
+                  c ? 28 : 40,
+                  c ? 12 : 16,
+                  c ? 60 : 80,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(first, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: c ? 32 : 42)),
+                    Text(
+                      first,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w900,
+                        fontSize: c ? 32 : 42,
+                      ),
+                    ),
                     if (last.isNotEmpty)
-                      Text(last, style: TextStyle(color: _yellow, fontWeight: FontWeight.w900, fontSize: c ? 32 : 42)),
+                      Text(
+                        last,
+                        style: TextStyle(
+                          color: _yellow,
+                          fontWeight: FontWeight.w900,
+                          fontSize: c ? 32 : 42,
+                        ),
+                      ),
                     SizedBox(height: c ? 12 : 16),
-                    Text(p.title, style: TextStyle(color: Colors.white, fontSize: c ? 13 : 15)),
+                    Text(
+                      p.title,
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: c ? 13 : 15,
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -116,13 +176,29 @@ class EditorialMagazineDesign extends StatelessWidget {
               flex: 2,
               child: Container(
                 color: const Color(0xFF0F172A),
-                padding: EdgeInsets.fromLTRB(c ? 12 : 16, c ? 28 : 40, c ? 16 : 24, c ? 24 : 32),
+                padding: EdgeInsets.fromLTRB(
+                  c ? 12 : 16,
+                  c ? 28 : 40,
+                  c ? 16 : 24,
+                  c ? 24 : 32,
+                ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(p.bio, style: TextStyle(color: Colors.white70, fontSize: c ? 11 : 13, height: 1.5)),
+                    Text(
+                      p.bio,
+                      style: TextStyle(
+                        color: Colors.white70,
+                        fontSize: c ? 11 : 13,
+                        height: 1.5,
+                      ),
+                    ),
                     SizedBox(height: c ? 14 : 18),
-                    PortfolioSocialBar(links: p.socialLinks, compact: c, variant: SocialBarVariant.brutalist),
+                    PortfolioSocialBar(
+                      links: p.socialLinks,
+                      compact: c,
+                      variant: SocialBarVariant.brutalist,
+                    ),
                   ],
                 ),
               ),
@@ -141,6 +217,8 @@ class EditorialMagazineDesign extends StatelessWidget {
   }
 
   Widget _reviews(bool c) {
+    if (PortfolioDesignHelpers.testimonials.isEmpty)
+      return const SizedBox.shrink();
     final featured = PortfolioDesignHelpers.testimonials.first;
     return Padding(
       padding: EdgeInsets.all(c ? 16 : 24),
@@ -152,7 +230,11 @@ class EditorialMagazineDesign extends StatelessWidget {
             color: const Color(0xFFFEF3C7),
             child: Text(
               '\u201C${featured.quote}\u201D',
-              style: TextStyle(fontSize: c ? 13 : 16, fontWeight: FontWeight.w700, height: 1.4),
+              style: TextStyle(
+                fontSize: c ? 13 : 16,
+                fontWeight: FontWeight.w700,
+                height: 1.4,
+              ),
             ),
           ),
           SizedBox(height: c ? 12 : 16),
@@ -164,9 +246,20 @@ class EditorialMagazineDesign extends StatelessWidget {
                 padding: EdgeInsets.only(bottom: c ? 8 : 10),
                 child: Row(
                   children: [
-                    Text('▸', style: TextStyle(color: _red, fontSize: c ? 14 : 16)),
+                    Text(
+                      '▸',
+                      style: TextStyle(color: _red, fontSize: c ? 14 : 16),
+                    ),
                     SizedBox(width: 8),
-                    Expanded(child: Text(PortfolioDesignHelpers.highlights[i].title, style: TextStyle(fontWeight: FontWeight.bold, fontSize: c ? 12 : 14))),
+                    Expanded(
+                      child: Text(
+                        PortfolioDesignHelpers.highlights[i].title,
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: c ? 12 : 14,
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -178,6 +271,7 @@ class EditorialMagazineDesign extends StatelessWidget {
 
   Widget _work(bool c) {
     final projects = PortfolioDesignHelpers.projects;
+    if (projects.isEmpty) return const SizedBox.shrink();
     return Padding(
       padding: EdgeInsets.fromLTRB(c ? 16 : 24, 0, c ? 16 : 24, c ? 16 : 24),
       child: Column(
@@ -188,7 +282,14 @@ class EditorialMagazineDesign extends StatelessWidget {
             color: _red,
             padding: EdgeInsets.all(c ? 12 : 16),
             alignment: Alignment.bottomLeft,
-            child: Text(projects.first.title, style: TextStyle(color: Colors.white, fontWeight: FontWeight.w900, fontSize: c ? 18 : 24)),
+            child: Text(
+              projects.first.title,
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w900,
+                fontSize: c ? 18 : 24,
+              ),
+            ),
           ),
           Row(
             children: [
@@ -198,7 +299,14 @@ class EditorialMagazineDesign extends StatelessWidget {
                     height: c ? 60 : 72,
                     color: const Color(0xFF0F172A),
                     padding: EdgeInsets.all(c ? 8 : 10),
-                    child: Text(proj.title, style: TextStyle(color: _yellow, fontWeight: FontWeight.bold, fontSize: c ? 10 : 12)),
+                    child: Text(
+                      proj.title,
+                      style: TextStyle(
+                        color: _yellow,
+                        fontWeight: FontWeight.bold,
+                        fontSize: c ? 10 : 12,
+                      ),
+                    ),
                   ),
                 ),
             ],

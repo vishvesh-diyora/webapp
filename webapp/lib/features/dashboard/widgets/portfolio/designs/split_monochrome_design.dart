@@ -65,22 +65,17 @@ class SplitMonochromeDesign extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Flexible(
-          flex: 45,
-          child: LayoutBuilder(
-            builder: (context, constraints) {
-              final side = constraints.maxWidth;
-              if (!side.isFinite || side <= 0) {
-                return const SizedBox.shrink();
-              }
-              return PortfolioProfileImage(
-                profile: p,
-                shape: ProfileImageShape.square,
-                size: side,
-                grayscale: true,
-                alignment: Alignment.topCenter,
-              );
-            },
+        SizedBox(
+          width: c ? 148.0 : 300.0,
+          child: AspectRatio(
+            aspectRatio: 1,
+            child: PortfolioProfileImage(
+              profile: p,
+              shape: ProfileImageShape.square,
+              size: c ? 148 : 300,
+              grayscale: true,
+              alignment: Alignment.topCenter,
+            ),
           ),
         ),
         Expanded(

@@ -29,11 +29,11 @@ abstract final class TemplatePreviewImageResolver {
     'assets/images/product-3.jpg':
         '$_unsplash/photo-1505744386214-509ebb5758a5?auto=format&fit=crop&w=900&h=600&q=80',
     'assets/images/reveal-1.jpg':
-        '$_unsplash/photo-1527529482836-469687ffb197?auto=format&fit=crop&w=900&h=600&q=80',
+        '$_unsplash/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=900&h=600&q=80',
     'assets/images/reveal-2.jpg':
-        '$_unsplash/photo-1464349095431-e9a21285b5bb?auto=format&fit=crop&w=900&h=600&q=80',
+        '$_unsplash/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=900&h=600&q=80',
     'assets/images/gift-cover.jpg':
-        '$_unsplash/photo-1513885535751-8b9238bd345a?auto=format&fit=crop&w=1200&h=700&q=80',
+        '$_unsplash/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=1200&h=700&q=80',
     'assets/images/banner-1.jpg':
         '$_unsplash/photo-1414235077428-338989a2e8c0?auto=format&fit=crop&w=1200&h=500&q=80',
     'assets/images/banner-2.jpg':

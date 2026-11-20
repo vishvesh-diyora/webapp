@@ -4,12 +4,13 @@ import 'package:webapp/features/templates/preview/layout_theme.dart';
 import 'package:webapp/features/templates/preview/shared/cart_preview_shell.dart';
 import 'package:webapp/features/templates/preview/shared/catalog_item_pricing.dart';
 import 'package:webapp/features/templates/preview/shared/catalog_product_utils.dart';
+import 'package:webapp/features/templates/preview/shared/catalog_listing_skins_next.dart';
 import 'package:webapp/features/templates/preview/shared/site_image.dart';
 
-/// Listing chrome for catalog templates 2–6.
+/// Listing chrome for catalog templates 2–11.
 /// Template 1 keeps the original grid and round category tiles.
 abstract final class CatalogListingSkins {
-  static bool isCustom(int variant) => variant >= 2 && variant <= 6;
+  static bool isCustom(int variant) => variant >= 2 && variant <= 11;
 
   static Widget sectionHeader(String title, LayoutTheme theme, bool compact) {
     final heading = theme.heading(compact, size: compact ? 20 : 24);
@@ -57,6 +58,7 @@ abstract final class CatalogListingSkins {
           ),
           child: Text(title, style: heading.copyWith(color: theme.secondary, fontSize: compact ? 18 : 20)),
         ),
+      7 || 8 || 9 || 10 || 11 => CatalogNextSkins.header(title, theme, compact),
       _ => Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -108,6 +110,17 @@ abstract final class CatalogListingSkins {
     required CartScope? cart,
     required ValueChanged<Map<String, dynamic>>? onProductTap,
   }) {
+    if (theme.variant >= 7 && theme.variant <= 11) {
+      return CatalogNextSkins.products(
+        items: items,
+        theme: theme,
+        compact: compact,
+        showAddToCart: showAddToCart,
+        cart: cart,
+        onProductTap: onProductTap,
+      );
+    }
+
     return switch (theme.variant) {
       2 => _EditorialList(
           items: items,
@@ -160,6 +173,17 @@ abstract final class CatalogListingSkins {
     required ValueChanged<int> onSelect,
     required String Function(Map<String, dynamic> category) labelOf,
   }) {
+    if (theme.variant >= 7 && theme.variant <= 11) {
+      return CatalogNextSkins.categories(
+        categories: categories,
+        selectedIndex: selectedIndex,
+        theme: theme,
+        compact: compact,
+        onSelect: onSelect,
+        labelOf: labelOf,
+      );
+    }
+
     if (theme.variant == 5) {
       return Wrap(
         alignment: WrapAlignment.start,
@@ -331,13 +355,21 @@ class _PosterCard extends StatelessWidget {
                         Positioned(
                           left: 6,
                           top: 6,
-                          child: Text(
-                            (index + 1).toString().padLeft(2, '0'),
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: compact ? 10 : 11,
-                              fontWeight: FontWeight.w800,
-                              shadows: const [Shadow(color: Colors.black54, blurRadius: 6)],
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: selected ? theme.primary : Colors.black.withValues(alpha: 0.55),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 2),
+                              child: Text(
+                                (index + 1).toString().padLeft(2, '0'),
+                                style: TextStyle(
+                                  color: Colors.white,
+                                  fontSize: compact ? 9 : 10,
+                                  fontWeight: FontWeight.w800,
+                                ),
+                              ),
                             ),
                           ),
                         ),
@@ -558,27 +590,48 @@ class _EditorialList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final thumb = compact ? 84.0 : 104.0;
-    return Column(
-      children: [
-        for (var i = 0; i < items.length; i++) ...[
-          _ProductTap(
-            onTap: onProductTap == null ? null : () => onProductTap!(items[i]),
-            child: Padding(
-              padding: EdgeInsets.symmetric(vertical: compact ? 12 : 14),
-              child: Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _thumb(items[i], theme, thumb, radius: 0),
-                  SizedBox(width: compact ? 12 : 16),
-                  Expanded(child: _copy(items[i], theme, compact, showAddToCart, cart, stacked: true)),
-                ],
-              ),
+    final thumb = compact ? 84.0 : 112.0;
+    Widget row(Map<String, dynamic> item) => _ProductTap(
+          onTap: onProductTap == null ? null : () => onProductTap!(item),
+          child: Padding(
+            padding: EdgeInsets.symmetric(vertical: compact ? 12 : 16),
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _thumb(item, theme, thumb, radius: 0),
+                SizedBox(width: compact ? 12 : 16),
+                Expanded(child: _copy(item, theme, compact, showAddToCart, cart, stacked: true)),
+              ],
             ),
           ),
-          if (i != items.length - 1) Container(height: 1, color: theme.text.withValues(alpha: 0.1)),
-        ],
-      ],
+        );
+    final divider = Container(height: 1, color: theme.text.withValues(alpha: 0.1));
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 760 ? 2 : 1;
+        final rows = <List<Map<String, dynamic>>>[
+          for (var i = 0; i < items.length; i += columns)
+            items.sublist(i, (i + columns).clamp(0, items.length)),
+        ];
+        return Column(
+          children: [
+            for (var r = 0; r < rows.length; r++) ...[
+              if (columns == 1)
+                row(rows[r].first)
+              else
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(child: row(rows[r].first)),
+                    const SizedBox(width: 32),
+                    Expanded(child: rows[r].length > 1 ? row(rows[r][1]) : const SizedBox.shrink()),
+                  ],
+                ),
+              if (r != rows.length - 1) divider,
+            ],
+          ],
+        );
+      },
     );
   }
 }
@@ -607,35 +660,79 @@ class _FeatureMosaic extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        _ProductTap(
-          onTap: onProductTap == null ? null : () => onProductTap!(feature),
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(theme.radius),
-            child: AspectRatio(
-              aspectRatio: compact ? 1.35 : 1.7,
-              child: Stack(
-                fit: StackFit.expand,
-                children: [
-                  _fillImage(_leadImage(feature), theme),
-                  const DecoratedBox(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topCenter,
-                        end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, Colors.black87],
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final onTap = onProductTap == null ? null : () => onProductTap!(feature);
+            if (constraints.maxWidth >= 760) {
+              return _ProductTap(
+                onTap: onTap,
+                borderRadius: theme.radius,
+                child: Container(
+                  height: 360,
+                  clipBehavior: Clip.antiAlias,
+                  decoration: theme.cardDecoration(),
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      Expanded(flex: 3, child: _fillImage(_leadImage(feature), theme)),
+                      Expanded(
+                        flex: 2,
+                        child: Padding(
+                          padding: const EdgeInsets.all(32),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                'FEATURED',
+                                style: theme.body(false, size: 11).copyWith(
+                                      color: theme.primary,
+                                      fontWeight: FontWeight.w800,
+                                      letterSpacing: 2,
+                                    ),
+                              ),
+                              const SizedBox(height: 12),
+                              _copy(feature, theme, false, showAddToCart, cart, stacked: true, titleSize: 28),
+                            ],
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
-                  Positioned(
-                    left: compact ? 12 : 16,
-                    right: compact ? 12 : 16,
-                    bottom: compact ? 12 : 16,
-                    child: _overlayCopy(feature, theme, compact, showAddToCart, cart, light: true),
+                ),
+              );
+            }
+            return _ProductTap(
+              onTap: onTap,
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(theme.radius),
+                child: AspectRatio(
+                  aspectRatio: compact ? 1.35 : 1.7,
+                  child: Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      _fillImage(_leadImage(feature), theme),
+                      const DecoratedBox(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [Colors.transparent, Colors.black87],
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        left: compact ? 12 : 16,
+                        right: compact ? 12 : 16,
+                        bottom: compact ? 12 : 16,
+                        child: _overlayCopy(feature, theme, compact, showAddToCart, cart, light: true),
+                      ),
+                    ],
                   ),
-                ],
+                ),
               ),
-            ),
-          ),
+            );
+          },
         ),
         if (rest.isNotEmpty) ...[
           SizedBox(height: compact ? 12 : 16),
@@ -647,7 +744,7 @@ class _FeatureMosaic extends StatelessWidget {
             cart: cart,
             onProductTap: onProductTap,
       imageAspect: 1,
-      textBlock: compact ? 156 : 172,
+      textBlock: _gridTextBlock(theme, compact),
           ),
         ],
       ],
@@ -676,7 +773,11 @@ class _OverlayGallery extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final columns = constraints.maxWidth >= 840 ? 3 : 2;
+        final columns = constraints.maxWidth >= 1100
+            ? 4
+            : constraints.maxWidth >= 760
+                ? 3
+                : 2;
         return GridView.builder(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
@@ -684,7 +785,7 @@ class _OverlayGallery extends StatelessWidget {
             crossAxisCount: columns,
             crossAxisSpacing: compact ? 10 : 14,
             mainAxisSpacing: compact ? 10 : 14,
-            childAspectRatio: compact ? 0.78 : 0.82,
+            childAspectRatio: compact ? 0.78 : 0.86,
           ),
           itemCount: items.length,
           itemBuilder: (context, index) {
@@ -746,42 +847,64 @@ class _LookbookStack extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        for (var i = 0; i < items.length; i++) ...[
-          if (i > 0) SizedBox(height: compact ? 14 : 18),
-          _ProductTap(
-            onTap: onProductTap == null ? null : () => onProductTap!(items[i]),
-            borderRadius: theme.radius,
-            child: DecoratedBox(
-              decoration: theme.cardDecoration(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  ClipRRect(
-                    borderRadius: BorderRadius.vertical(top: Radius.circular(theme.radius)),
-                    child: AspectRatio(
-                      aspectRatio: compact ? 1.25 : 1.45,
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          _fillImage(_leadImage(items[i]), theme),
-                          if (catalogIsBestSeller(items[i]))
-                            Positioned(top: 12, left: 12, child: _Badge(label: 'Best seller', theme: theme, compact: compact)),
-                        ],
-                      ),
+    Widget card(Map<String, dynamic> item) => _ProductTap(
+          onTap: onProductTap == null ? null : () => onProductTap!(item),
+          borderRadius: theme.radius,
+          child: DecoratedBox(
+            decoration: theme.cardDecoration(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.vertical(top: Radius.circular(theme.radius)),
+                  child: AspectRatio(
+                    aspectRatio: compact ? 1.25 : 1.3,
+                    child: Stack(
+                      fit: StackFit.expand,
+                      children: [
+                        _fillImage(_leadImage(item), theme),
+                        if (catalogIsBestSeller(item))
+                          Positioned(top: 12, left: 12, child: _Badge(label: 'Best seller', theme: theme, compact: compact)),
+                      ],
                     ),
                   ),
-                  Padding(
-                    padding: EdgeInsets.all(compact ? 14 : 18),
-                    child: _copy(items[i], theme, compact, showAddToCart, cart, stacked: false, titleSize: compact ? 16 : 18),
-                  ),
-                ],
-              ),
+                ),
+                Padding(
+                  padding: EdgeInsets.all(compact ? 14 : 18),
+                  child: _copy(item, theme, compact, showAddToCart, cart, stacked: false, titleSize: compact ? 16 : 18),
+                ),
+              ],
             ),
           ),
-        ],
-      ],
+        );
+    final gap = compact ? 14.0 : 18.0;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final columns = constraints.maxWidth >= 1100
+            ? 3
+            : constraints.maxWidth >= 700
+                ? 2
+                : 1;
+        return Column(
+          children: [
+            for (var i = 0; i < items.length; i += columns) ...[
+              if (i > 0) SizedBox(height: gap),
+              if (columns == 1)
+                card(items[i])
+              else
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    for (var c = 0; c < columns; c++) ...[
+                      if (c > 0) SizedBox(width: gap),
+                      Expanded(child: i + c < items.length ? card(items[i + c]) : const SizedBox.shrink()),
+                    ],
+                  ],
+                ),
+            ],
+          ],
+        );
+      },
     );
   }
 }
@@ -813,7 +936,7 @@ class _BleedCatalog extends StatelessWidget {
       cart: cart,
       onProductTap: onProductTap,
       imageAspect: 1,
-      textBlock: compact ? 156 : 172,
+      textBlock: _gridTextBlock(theme, compact),
     );
   }
 }
@@ -891,9 +1014,11 @@ class _MeasuredGrid extends StatelessWidget {
                         ),
                       ),
                     ),
-                    Padding(
-                      padding: EdgeInsets.fromLTRB(compact ? 8 : 10, compact ? 8 : 10, compact ? 8 : 10, compact ? 8 : 10),
-                      child: _copy(item, theme, compact, showAddToCart, cart, stacked: false),
+                    Expanded(
+                      child: Padding(
+                        padding: EdgeInsets.all(compact ? 8 : 10),
+                        child: _copy(item, theme, compact, showAddToCart, cart, stacked: false, pinPrice: true),
+                      ),
                     ),
                   ],
                 ),
@@ -938,6 +1063,7 @@ Widget _copy(
   CartScope? cart, {
   required bool stacked,
   double? titleSize,
+  bool pinPrice = false,
 }) {
   final name = catalogItemLabel(item);
   final subtitle = catalogProductSubtitle(item);
@@ -993,6 +1119,7 @@ Widget _copy(
       title,
       sub,
       const SizedBox(height: 8),
+      if (pinPrice) const Spacer(),
       Row(
         children: [
           Expanded(child: price),
@@ -1107,6 +1234,11 @@ Widget _thumb(Map<String, dynamic> item, LayoutTheme theme, double size, {requir
       child: _fillImage(_leadImage(item), theme),
     ),
   );
+}
+
+double _gridTextBlock(LayoutTheme theme, bool compact) {
+  final scale = theme.fontScale.clamp(1.0, 1.3);
+  return (compact ? 112.0 : 128.0) * scale + 14;
 }
 
 String? _leadImage(Map<String, dynamic> item) {

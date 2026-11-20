@@ -357,12 +357,12 @@ abstract final class DefaultContentFactory {
           {
             'name': 'Sides',
             'image':
-                'https://images.unsplash.com/photo-1574481284752-6bfd47f21e4b?w=400&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=400&auto=format&fit=crop&q=80',
           },
           {
             'name': 'Desserts',
             'image':
-                'https://images.unsplash.com/photo-1565958011703-44f9824ba1cd?w=400&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1524351199678-941a58a3df50?w=400&auto=format&fit=crop&q=80',
           },
           {
             'name': 'Drinks',
@@ -476,10 +476,10 @@ abstract final class DefaultContentFactory {
             'discount': 14,
             'description': 'Seasonal berry compote',
             'image':
-                'https://images.unsplash.com/photo-1565958011703-44f9824ba1cd?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1524351199678-941a58a3df50?w=800&auto=format&fit=crop&q=80',
             'images': [
-              'https://images.unsplash.com/photo-1565958011703-44f9824ba1cd?w=800&auto=format&fit=crop&q=80',
-              'https://images.unsplash.com/photo-1624353365286-3f8ed62f2f1a?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1524351199678-941a58a3df50?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1533134242443-d4fd215305ad?w=800&auto=format&fit=crop&q=80',
             ],
             'spicy': false,
             'bestSeller': true,
@@ -532,9 +532,9 @@ abstract final class DefaultContentFactory {
             'discount': 0,
             'description': 'House cold brew, tonic, citrus',
             'image':
-                'https://images.unsplash.com/photo-1497935586351-b67a8e006c44?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=800&auto=format&fit=crop&q=80',
             'images': [
-              'https://images.unsplash.com/photo-1497935586351-b67a8e006c44?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1517701604599-bb29b565090c?w=800&auto=format&fit=crop&q=80',
             ],
             'spicy': false,
           },
@@ -559,9 +559,9 @@ abstract final class DefaultContentFactory {
             'discount': 0,
             'description': 'Sourdough, chili flakes, microgreens',
             'image':
-                'https://images.unsplash.com/photo-1541519227359-08d847fca6af?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1588137378633-dea1336ce1e2?w=800&auto=format&fit=crop&q=80',
             'images': [
-              'https://images.unsplash.com/photo-1541519227359-08d847fca6af?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1588137378633-dea1336ce1e2?w=800&auto=format&fit=crop&q=80',
             ],
             'spicy': false,
           },
@@ -572,9 +572,9 @@ abstract final class DefaultContentFactory {
             'discount': 8,
             'description': 'Mint gremolata, charred lemon',
             'image':
-                'https://images.unsplash.com/photo-1600891964595-f61ba98e256f?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80',
             'images': [
-              'https://images.unsplash.com/photo-1600891964595-f61ba98e256f?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1544025162-d76694265947?w=800&auto=format&fit=crop&q=80',
             ],
             'spicy': false,
           },
@@ -585,9 +585,9 @@ abstract final class DefaultContentFactory {
             'discount': 0,
             'description': 'Hand-cut, truffle oil, parmesan',
             'image':
-                'https://images.unsplash.com/photo-1574481284752-6bfd47f21e4b?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=800&auto=format&fit=crop&q=80',
             'images': [
-              'https://images.unsplash.com/photo-1574481284752-6bfd47f21e4b?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1573080496219-bb080dd4f877?w=800&auto=format&fit=crop&q=80',
             ],
             'spicy': false,
           },
@@ -598,9 +598,9 @@ abstract final class DefaultContentFactory {
             'discount': 0,
             'description': 'San Marzano, fresh mozzarella, basil',
             'image':
-                'https://images.unsplash.com/photo-1574071318508-1cdbab80b002?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=800&auto=format&fit=crop&q=80',
             'images': [
-              'https://images.unsplash.com/photo-1574071318508-1cdbab80b002?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1604068549290-dea0e4a305ca?w=800&auto=format&fit=crop&q=80',
             ],
             'spicy': false,
           },
@@ -760,7 +760,7 @@ abstract final class DefaultContentFactory {
           {
             'name': 'Rugs',
             'image':
-                'https://images.unsplash.com/photo-1600166898308-ae3035186d3f?w=400&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1575414003591-ece8d0416c7a?w=400&auto=format&fit=crop&q=80',
           },
           {
             'name': 'Storage',
@@ -782,7 +782,7 @@ abstract final class DefaultContentFactory {
                 'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop&q=80',
             'images': [
               'https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=800&auto=format&fit=crop&q=80',
-              'https://images.unsplash.com/photo-1493663284031-d7a0f88256e1?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1580480055273-228ff5388ef8?w=800&auto=format&fit=crop&q=80',
               'https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=800&auto=format&fit=crop&q=80',
             ],
             'description': 'Solid oak frame with breathable linen upholstery.',
@@ -891,9 +891,9 @@ abstract final class DefaultContentFactory {
             'price': 58,
             'discount': 0,
             'image':
-                'https://images.unsplash.com/photo-1600489000022-0f9a8e3c6f37?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1452195100486-9cc805987862?w=800&auto=format&fit=crop&q=80',
             'images': [
-              'https://images.unsplash.com/photo-1600489000022-0f9a8e3c6f37?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1452195100486-9cc805987862?w=800&auto=format&fit=crop&q=80',
             ],
             'description': 'Polished marble with leather handles.',
           },
@@ -976,9 +976,9 @@ abstract final class DefaultContentFactory {
             'price': 199,
             'discount': 15,
             'image':
-                'https://images.unsplash.com/photo-1600166898308-ae3035186d3f?w=800&auto=format&fit=crop&q=80',
+                'https://images.unsplash.com/photo-1575414003591-ece8d0416c7a?w=800&auto=format&fit=crop&q=80',
             'images': [
-              'https://images.unsplash.com/photo-1600166898308-ae3035186d3f?w=800&auto=format&fit=crop&q=80',
+              'https://images.unsplash.com/photo-1575414003591-ece8d0416c7a?w=800&auto=format&fit=crop&q=80',
             ],
             'description': '5×7 ft natural fiber, braided edge.',
           },
@@ -1023,7 +1023,7 @@ abstract final class DefaultContentFactory {
       {'primary': '#4A7C59', 'secondary': '#2D4A3E', 'accent': '#86EFAC', 'background': '#F7F3EB', 'surface': '#FFFFFF', 'text': '#1C3829', 'layout': 'timeline', 'radius': 16, 'fontScale': 1.0, 'spacing': 20, 'heroStyle': 'curved', 'cardStyle': 'organic', 'navStyle': 'floating', 'footerStyle': 'nature', 'animation': 'zenRise', 'secondaryLayout': 'panel', 'tertiaryLayout': 'gallery'},
       {'primary': '#D4AF37', 'secondary': '#1C1917', 'accent': '#FAF8F5', 'background': '#FAF8F5', 'surface': '#FFFFFF', 'text': '#1C1917', 'layout': 'luxury', 'radius': 2, 'fontScale': 1.02, 'spacing': 24, 'heroStyle': 'marble', 'cardStyle': 'gold', 'navStyle': 'elegant', 'footerStyle': 'premium', 'animation': 'luxuryFade', 'secondaryLayout': 'quote', 'tertiaryLayout': 'showcase'},
       {'primary': '#00F5FF', 'secondary': '#050510', 'accent': '#FF006E', 'background': '#050510', 'surface': '#111827', 'text': '#F8FAFC', 'layout': 'cyber', 'radius': 6, 'fontScale': 0.98, 'spacing': 10, 'heroStyle': 'neon', 'cardStyle': 'neon', 'navStyle': 'terminal', 'footerStyle': 'grid', 'animation': 'glitchSnap', 'secondaryLayout': 'tags', 'tertiaryLayout': 'price'},
-      {'primary': '#3D3D3D', 'secondary': '#2A2A2A', 'accent': '#FFFFFF', 'background': '#2A2A2A', 'surface': '#3D3D3D', 'text': '#FFFFFF', 'layout': 'monochrome', 'radius': 0, 'fontScale': 1.0, 'spacing': 16, 'heroStyle': 'monochromeSplit', 'cardStyle': 'line', 'navStyle': 'minimal', 'footerStyle': 'mono', 'animation': 'slideLeft', 'secondaryLayout': 'minimal', 'tertiaryLayout': 'stack'},
+      {'primary': '#C8C8C8', 'secondary': '#2A2A2A', 'accent': '#FFFFFF', 'background': '#2A2A2A', 'surface': '#3D3D3D', 'text': '#FFFFFF', 'layout': 'monochrome', 'radius': 0, 'fontScale': 1.0, 'spacing': 16, 'heroStyle': 'monochromeSplit', 'cardStyle': 'line', 'navStyle': 'minimal', 'footerStyle': 'mono', 'animation': 'slideLeft', 'secondaryLayout': 'minimal', 'tertiaryLayout': 'stack'},
       {'primary': '#7C3AED', 'secondary': '#4C1D95', 'accent': '#C4B5FD', 'background': '#FAF5FF', 'surface': '#FFFFFF', 'text': '#2E1065', 'layout': 'ribbon', 'radius': 14, 'fontScale': 1.0, 'spacing': 16, 'heroStyle': 'ribbon', 'cardStyle': 'elevated', 'navStyle': 'tabs', 'footerStyle': 'split', 'animation': 'fadeUp', 'secondaryLayout': 'accent', 'tertiaryLayout': 'wide'},
       {'primary': '#0891B2', 'secondary': '#164E63', 'accent': '#67E8F9', 'background': '#ECFEFF', 'surface': '#FFFFFF', 'text': '#083344', 'layout': 'inset', 'radius': 10, 'fontScale': 0.97, 'spacing': 18, 'heroStyle': 'inset', 'cardStyle': 'bordered', 'navStyle': 'segmented', 'footerStyle': 'inline', 'animation': 'slideLeft', 'secondaryLayout': 'float', 'tertiaryLayout': 'dense'},
       {'primary': '#BE123C', 'secondary': '#881337', 'accent': '#FDA4AF', 'background': '#FFF1F2', 'surface': '#FFFFFF', 'text': '#4C0519', 'layout': 'dual', 'radius': 6, 'fontScale': 1.06, 'spacing': 14, 'heroStyle': 'dual', 'cardStyle': 'flat', 'navStyle': 'drawer', 'footerStyle': 'dark', 'animation': 'clipReveal', 'secondaryLayout': 'dense', 'tertiaryLayout': 'banner'},

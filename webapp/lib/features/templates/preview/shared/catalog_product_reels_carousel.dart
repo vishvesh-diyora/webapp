@@ -11,12 +11,14 @@ class CatalogProductReelsCarousel extends StatelessWidget {
     required this.theme,
     required this.compact,
     required this.onReelTap,
+    this.title = 'Shop reels',
   });
 
   final List<Map<String, dynamic>> reels;
   final LayoutTheme theme;
   final bool compact;
   final ValueChanged<Map<String, dynamic>> onReelTap;
+  final String title;
 
   static const double _aspectWidth = 9;
   static const double _aspectHeight = 16;
@@ -43,7 +45,7 @@ class CatalogProductReelsCarousel extends StatelessWidget {
               Padding(
                 padding: EdgeInsets.symmetric(horizontal: horizontalPad),
                 child: Text(
-                  'SHOP REELS',
+                  title.toUpperCase(),
                   style: theme.body(compact, size: 10).copyWith(letterSpacing: 2),
                 ),
               ),
@@ -100,7 +102,7 @@ class _ReelCard extends StatelessWidget {
         elevation: 0,
         shadowColor: theme.secondary.withValues(alpha: 0.14),
         shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(theme.variant == 1 ? 22 : (theme.radius * 1.4).clamp(0, 26)),
         ),
         clipBehavior: Clip.antiAlias,
         child: Stack(

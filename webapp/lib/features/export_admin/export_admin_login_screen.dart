@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:webapp/features/export_admin/export_admin_dev_flags.dart';
+import 'package:webapp/features/export_admin/export_admin_ui.dart';
 import 'package:webapp/features/export_admin/export_admin_session.dart';
 import 'package:webapp/features/export_admin/export_remote_config_keys.dart';
 import 'package:webapp/features/export_admin/export_viewer_config_load_result.dart';
@@ -85,9 +86,21 @@ class _ExportAdminLoginScreenState extends State<ExportAdminLoginScreen> {
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text(
-                      'Sign in',
-                      style: theme.textTheme.headlineSmall,
+                    Row(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(10),
+                          decoration: BoxDecoration(
+                            color: theme.colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Icon(Icons.admin_panel_settings_outlined, color: theme.colorScheme.onPrimaryContainer),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text('Sign in', style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w700)),
+                        ),
+                      ],
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -146,20 +159,14 @@ class _ExportAdminLoginScreenState extends State<ExportAdminLoginScreen> {
                     const SizedBox(height: 20),
                     TextField(
                       controller: _user,
-                      decoration: const InputDecoration(
-                        labelText: 'Username',
-                        border: OutlineInputBorder(),
-                      ),
+                      decoration: exportAdminInputDecoration(context, 'Username'),
                       autocorrect: false,
                       textInputAction: TextInputAction.next,
                     ),
                     const SizedBox(height: 12),
                     TextField(
                       controller: _pass,
-                      decoration: const InputDecoration(
-                        labelText: 'Password',
-                        border: OutlineInputBorder(),
-                      ),
+                      decoration: exportAdminInputDecoration(context, 'Password'),
                       obscureText: true,
                       onSubmitted: (_) => _submit(),
                     ),

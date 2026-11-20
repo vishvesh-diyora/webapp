@@ -50,9 +50,10 @@ class TemplateDefinition {
   }
 }
 
-/// Six visually distinct templates per category. Template 1 is the original.
+/// Ecommerce, restaurant, business, and portfolio expose 11 templates.
+/// Gift stays at the original six. Template 1 in every category is unchanged.
 abstract final class TemplateCatalog {
-  static const int templatesPerCategory = 6;
+  static int limitFor(int type) => type == CategoryType.giftReveal ? 6 : 11;
 
   static List<TemplateDefinition> forCategory(int type) {
     return all.where((template) => template.type == type).toList();
@@ -89,7 +90,8 @@ abstract final class TemplateCatalog {
     List<_TemplateMeta> metas,
   ) {
     if (metas.isEmpty) return const [];
-    final count = metas.length < templatesPerCategory ? metas.length : templatesPerCategory;
+    final limit = limitFor(type);
+    final count = metas.length < limit ? metas.length : limit;
     return [
       for (var i = 0; i < count; i++)
         TemplateDefinition(

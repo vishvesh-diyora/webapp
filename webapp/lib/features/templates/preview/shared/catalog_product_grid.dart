@@ -58,10 +58,11 @@ class CatalogProductGrid extends StatelessWidget {
     final pad = compact ? 8.0 : 10.0;
     final innerWidth = cellWidth - 2 * pad;
     final imageHeight = innerWidth / imageAspect;
-    final titleBlock = compact ? 32.0 : 36.0;
-    final subtitleBlock = compact ? 14.0 : 16.0;
-    final priceBlock = compact ? 28.0 : 32.0;
-    final verticalGaps = compact ? 12.0 : 14.0;
+    final scale = theme.fontScale.clamp(0.9, 1.3);
+    final titleBlock = (compact ? 34.0 : 40.0) * scale;
+    final subtitleBlock = (compact ? 16.0 : 18.0) * scale;
+    final priceBlock = compact ? 34.0 : 36.0;
+    final verticalGaps = compact ? 14.0 : 16.0;
     final cellHeight = 2 * pad + imageHeight + titleBlock + subtitleBlock + priceBlock + verticalGaps;
     return cellWidth / cellHeight;
   }
@@ -80,7 +81,7 @@ class CatalogProductGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     if (items.isEmpty) return const SizedBox.shrink();
 
-    if (theme.variant >= 2 && theme.variant <= 6) {
+    if (CatalogListingSkins.isCustom(theme.variant)) {
       return CatalogListingSkins.products(
         items: items,
         theme: theme,

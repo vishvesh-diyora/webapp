@@ -14,6 +14,7 @@ import 'package:webapp/features/templates/preview/shared/catalog_product_reels_c
 import 'package:webapp/features/templates/preview/shared/catalog_product_utils.dart';
 import 'package:webapp/features/templates/preview/shared/catalog_store_footer.dart';
 import 'package:webapp/features/templates/preview/shared/site_image.dart';
+import 'package:webapp/features/dashboard/widgets/portfolio/portfolio_avatar.dart';
 import 'package:webapp/features/website/domain/entities/website_document.dart';
 
 /// JSON-driven preview for business, restaurant, and ecommerce — 22 layouts via theme.
@@ -235,7 +236,7 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
       return ColoredBox(
         color: theme.background,
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.start,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             SiteNavBar(
               theme: theme,
@@ -246,6 +247,25 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
               logo: logo,
             ),
             Expanded(child: content),
+          ],
+        ),
+      );
+    }
+
+    if (theme.navStyle == 'bottom') {
+      return ColoredBox(
+        color: theme.background,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(child: content),
+            SiteNavBar(
+              theme: theme,
+              title: title,
+              compact: widget.compact,
+              mobileLayout: widget.mobileLayout,
+              logo: logo,
+            ),
           ],
         ),
       );
@@ -291,7 +311,7 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
 
     if (theme.navStyle == 'sidebar' && !widget.mobileLayout) {
       return Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           if (!_catalogSearchOpen)
             SiteNavBar(
@@ -304,6 +324,24 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
               onSearchTap: _openCatalogSearch,
             ),
           Expanded(child: content),
+        ],
+      );
+    }
+
+    if (theme.navStyle == 'bottom' && !_catalogSearchOpen) {
+      return Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          Expanded(child: content),
+          SiteNavBar(
+            theme: theme,
+            title: title,
+            subtitle: tagline,
+            compact: widget.compact,
+            mobileLayout: widget.mobileLayout,
+            logo: logo,
+            onSearchTap: _openCatalogSearch,
+          ),
         ],
       );
     }
@@ -336,14 +374,13 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        if (theme.navStyle != 'sidebar' || widget.mobileLayout)
-          SiteNavBar(
-            theme: theme,
-            title: _catalogProductNavTitle(),
-            compact: widget.compact,
-            mobileLayout: widget.mobileLayout,
-            onBackTap: () => Navigator.pop(navContext),
-          ),
+        SiteNavBar(
+          theme: theme,
+          title: _catalogProductNavTitle(),
+          compact: widget.compact,
+          mobileLayout: widget.mobileLayout,
+          onBackTap: () => Navigator.pop(navContext),
+        ),
         Expanded(child: detail),
       ],
     );
@@ -357,14 +394,13 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
   }) {
     final filtered = _filterCatalogItemsByQuery(catalogItems);
     final sections = <Widget>[
-      if (theme.navStyle != 'sidebar' || widget.mobileLayout)
-        SiteNavBar(
-          theme: theme,
-          title: _catalogSearchNavTitle(),
-          compact: widget.compact,
-          mobileLayout: widget.mobileLayout,
-          onBackTap: _closeCatalogSearch,
-        ),
+      SiteNavBar(
+        theme: theme,
+        title: _catalogSearchNavTitle(),
+        compact: widget.compact,
+        mobileLayout: widget.mobileLayout,
+        onBackTap: _closeCatalogSearch,
+      ),
       Padding(
         padding: theme.pad(compact),
         child: TextField(
@@ -391,14 +427,6 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
         onProductTap: _openProductDetail,
       ),
       CatalogStoreFooter(primary: primary, theme: theme, compact: widget.compact),
-      if (theme.navStyle == 'bottom')
-        SiteNavBar(
-          theme: theme,
-          title: _catalogSearchNavTitle(),
-          compact: widget.compact,
-          mobileLayout: widget.mobileLayout,
-          onBackTap: _closeCatalogSearch,
-        ),
     ];
 
     return ListView(padding: EdgeInsets.zero, children: sections);
@@ -421,7 +449,7 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
     final usesStoreFooter = isCatalogType ||
         widget.document.type == CategoryType.businessProfile;
     final sections = <Widget>[
-      if (theme.navStyle != 'sidebar' || widget.mobileLayout)
+      if (theme.navStyle != 'bottom' && (theme.navStyle != 'sidebar' || widget.mobileLayout))
         SiteNavBar(
           theme: theme,
           title: title,
@@ -463,16 +491,6 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
         CatalogStoreFooter(primary: primary, theme: theme, compact: widget.compact)
       else
         SiteFooter(theme: theme, compact: widget.compact, phone: phone, email: email, title: title),
-      if (theme.navStyle == 'bottom')
-        SiteNavBar(
-          theme: theme,
-          title: title,
-          subtitle: isCatalogType ? tagline : null,
-          compact: widget.compact,
-          mobileLayout: widget.mobileLayout,
-          logo: logo,
-          onSearchTap: isCatalogType ? _openCatalogSearch : null,
-        ),
     ];
 
     if (theme.layout == 'magazine') {
@@ -510,6 +528,7 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
       theme: theme,
       compact: compact,
       onReelTap: onProductTap,
+      title: _isRestaurantCatalog ? 'Menu reels' : 'Shop reels',
     );
 
     if (categories.isEmpty) {
@@ -564,7 +583,7 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
                     ),
                     SizedBox(height: compact ? 10 : 12),
                     SizedBox(
-                      height: compact ? 96 : 108,
+                      height: compact ? 118 : 132,
                       child: ListView.separated(
                         scrollDirection: Axis.horizontal,
                         itemCount: categories.length,
@@ -670,13 +689,37 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
   }
 
   Widget _mapBlock(Map<String, dynamic> primary, LayoutTheme theme) {
+    final address = (primary['address'] as String? ?? '').trim();
     return Padding(
       padding: theme.pad(compact),
       child: Container(
-        height: compact ? 120 : 160,
-        alignment: Alignment.center,
-        decoration: theme.cardDecoration(),
-        child: Text('Map', style: theme.body(compact, size: 11)),
+        width: double.infinity,
+        padding: EdgeInsets.symmetric(horizontal: compact ? 16 : 20, vertical: compact ? 18 : 22),
+        decoration: theme.cardDecoration().copyWith(
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              theme.primary.withValues(alpha: 0.1),
+              theme.surface,
+            ],
+          ),
+        ),
+        child: Column(
+          children: [
+            Icon(Icons.location_on_rounded, color: theme.primary, size: compact ? 26 : 30),
+            SizedBox(height: compact ? 8 : 10),
+            Text('Find us', style: theme.heading(compact, size: compact ? 16 : 18)),
+            if (address.isNotEmpty) ...[
+              SizedBox(height: compact ? 6 : 8),
+              Text(
+                address,
+                textAlign: TextAlign.center,
+                style: theme.body(compact, size: 12),
+              ),
+            ],
+          ],
+        ),
       ),
     );
   }
@@ -917,9 +960,11 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
 
   Widget _itemImage(Map<String, dynamic> item, LayoutTheme theme, double size) {
     final path = item['image'] as String?;
-    if (path != null && path.isNotEmpty) return SiteImage(path: path, width: double.infinity, height: size);
+    if (path != null && path.isNotEmpty) {
+      return SiteImage(path: path, width: size, height: size, shape: ProfileImageShape.square);
+    }
     return Container(
-      width: double.infinity,
+      width: size,
       height: size,
       decoration: BoxDecoration(color: theme.primary.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(theme.radius * 0.6)),
       alignment: Alignment.center,

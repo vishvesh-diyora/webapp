@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:webapp/features/dashboard/widgets/portfolio/portfolio_avatar.dart';
 import 'package:webapp/features/templates/preview/layout_theme.dart';
 import 'package:webapp/features/templates/preview/shared/site_image.dart';
 
@@ -69,23 +70,27 @@ class _CatalogAutoBannerCarouselState extends State<CatalogAutoBannerCarousel> {
     if (banners.isEmpty) return const SizedBox.shrink();
 
     final variant = widget.theme.variant;
-    final custom = variant >= 2 && variant <= 6;
-    final height = !custom
-        ? (widget.compact ? 148.0 : 188.0)
-        : switch (variant) {
-            2 => widget.compact ? 176.0 : 228.0,
-            3 => widget.compact ? 168.0 : 214.0,
-            4 => widget.compact ? 190.0 : 248.0,
-            5 => widget.compact ? 160.0 : 208.0,
-            _ => widget.compact ? 164.0 : 210.0,
-          };
-    final pad = !custom
-        ? widget.theme.pad(widget.compact)
-        : switch (variant) {
-            2 || 4 => EdgeInsets.zero,
-            5 => EdgeInsets.all(widget.compact ? 18 : 24),
-            _ => widget.theme.pad(widget.compact),
-          };
+    final height = switch (variant) {
+      2 => widget.compact ? 176.0 : 228.0,
+      3 => widget.compact ? 168.0 : 214.0,
+      4 => widget.compact ? 190.0 : 248.0,
+      5 => widget.compact ? 160.0 : 208.0,
+      6 => widget.compact ? 164.0 : 210.0,
+      7 => widget.compact ? 210.0 : 268.0,
+      8 => widget.compact ? 188.0 : 236.0,
+      9 => widget.compact ? 156.0 : 196.0,
+      10 => widget.compact ? 176.0 : 224.0,
+      11 => widget.compact ? 200.0 : 252.0,
+      _ => widget.compact ? 148.0 : 188.0,
+    };
+    final pad = switch (variant) {
+      2 || 4 || 7 || 11 => EdgeInsets.zero,
+      5 => EdgeInsets.all(widget.compact ? 18 : 24),
+      8 => EdgeInsets.symmetric(horizontal: widget.compact ? 16 : 28, vertical: widget.compact ? 12 : 16),
+      9 => EdgeInsets.symmetric(horizontal: widget.compact ? 20 : 40, vertical: widget.compact ? 12 : 18),
+      10 => EdgeInsets.all(widget.compact ? 12 : 16),
+      _ => widget.theme.pad(widget.compact),
+    };
 
     return Padding(
       padding: pad,
@@ -140,14 +145,46 @@ class _BannerSlide extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final photo = SiteImage(
+      path: banner['image'] as String?,
+      width: double.infinity,
+      height: double.infinity,
+      fit: BoxFit.cover,
+      shape: ProfileImageShape.square,
+    );
+    if (theme.variant == 2 || theme.variant == 4) {
+      return photo;
+    }
+    if (theme.variant != 10 && theme.variant != 11 && theme.variant != 7) {
+      return Container(
+        decoration: theme.cardDecoration(),
+        clipBehavior: Clip.antiAlias,
+        child: photo,
+      );
+    }
     return Container(
       decoration: theme.cardDecoration(),
       clipBehavior: Clip.antiAlias,
-      child: SiteImage(
-        path: banner['image'] as String?,
-        width: double.infinity,
-        height: double.infinity,
-        fit: BoxFit.cover,
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          photo,
+          if (theme.variant != 7)
+            const DecoratedBox(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.center,
+                  end: Alignment.bottomCenter,
+                  colors: [Colors.transparent, Color(0xCC020617)],
+                ),
+              ),
+            ),
+          if (theme.variant == 7)
+            Align(
+              alignment: Alignment.bottomCenter,
+              child: Container(height: 8, color: theme.accent),
+            ),
+        ],
       ),
     );
   }

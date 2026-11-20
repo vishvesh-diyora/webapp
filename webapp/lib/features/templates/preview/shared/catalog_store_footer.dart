@@ -26,11 +26,24 @@ class CatalogStoreFooter extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
-    final onColor = theme.footerStyle == 'dark' ||
-        theme.footerStyle == 'brutal' ||
-        theme.footerStyle == 'gradient';
-    final Color? foreground = onColor ? Colors.white : null;
-    final iconColor = onColor ? Colors.white : theme.primary;
+    final styleName = theme.footerStyle;
+    final onColor = styleName == 'dark' ||
+        styleName == 'gradient' ||
+        styleName == 'premium' ||
+        styleName == 'grid' ||
+        styleName == 'mono';
+    final Color? foreground = switch (styleName) {
+      'brutal' => theme.text,
+      'premium' => theme.primary,
+      'dark' || 'gradient' || 'grid' || 'mono' => Colors.white,
+      _ => null,
+    };
+    final iconColor = switch (styleName) {
+      'brutal' => theme.text,
+      'premium' => theme.primary,
+      'dark' || 'gradient' || 'grid' || 'mono' => Colors.white,
+      _ => theme.primary,
+    };
     final padding = switch (theme.footerStyle) {
       'compact' => EdgeInsets.symmetric(
           horizontal: compact ? 12 : 16,
@@ -58,6 +71,22 @@ class CatalogStoreFooter extends StatelessWidget {
       'wide' => BoxDecoration(
           color: theme.surface,
           border: Border(top: BorderSide(color: theme.primary.withValues(alpha: 0.35))),
+        ),
+      'nature' => BoxDecoration(
+          color: theme.background,
+          border: Border(top: BorderSide(color: theme.accent, width: 4)),
+        ),
+      'premium' => BoxDecoration(
+          color: theme.secondary,
+          border: Border(top: BorderSide(color: theme.primary, width: 1)),
+        ),
+      'grid' => BoxDecoration(
+          color: theme.secondary,
+          border: Border(top: BorderSide(color: theme.primary, width: 2)),
+        ),
+      'mono' => BoxDecoration(
+          color: theme.secondary,
+          border: Border(top: BorderSide(color: Colors.white.withValues(alpha: 0.35))),
         ),
       _ => null,
     };

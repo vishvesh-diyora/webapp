@@ -39,5 +39,8 @@ class _PortfolioContentScopeState extends State<PortfolioContentScope> {
   }
 
   @override
-  Widget build(BuildContext context) => widget.child;
+  Widget build(BuildContext context) {
+    PortfolioDesignHelpers.bind(widget.document);
+    return widget.child;
+  }
 }
