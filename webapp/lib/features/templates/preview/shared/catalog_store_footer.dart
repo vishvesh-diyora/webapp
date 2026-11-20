@@ -26,23 +26,60 @@ class CatalogStoreFooter extends StatelessWidget {
       return const SizedBox.shrink();
     }
 
+    final onColor = theme.footerStyle == 'dark' ||
+        theme.footerStyle == 'brutal' ||
+        theme.footerStyle == 'gradient';
+    final Color? foreground = onColor ? Colors.white : null;
+    final iconColor = onColor ? Colors.white : theme.primary;
+    final padding = switch (theme.footerStyle) {
+      'compact' => EdgeInsets.symmetric(
+          horizontal: compact ? 12 : 16,
+          vertical: compact ? 10 : 12,
+        ),
+      'wide' => EdgeInsets.fromLTRB(
+          compact ? 20 : 28,
+          compact ? 20 : 26,
+          compact ? 20 : 28,
+          compact ? 22 : 30,
+        ),
+      _ => theme.pad(compact),
+    };
+    final decoration = switch (theme.footerStyle) {
+      'gradient' => BoxDecoration(
+          gradient: LinearGradient(
+            colors: [theme.secondary, theme.primary],
+          ),
+        ),
+      'dark' || 'brutal' => BoxDecoration(color: theme.secondary),
+      'columns' => BoxDecoration(
+          color: theme.surface,
+          border: Border(top: BorderSide(color: theme.primary, width: 3)),
+        ),
+      'wide' => BoxDecoration(
+          color: theme.surface,
+          border: Border(top: BorderSide(color: theme.primary.withValues(alpha: 0.35))),
+        ),
+      _ => null,
+    };
+
     return Container(
       width: double.infinity,
-      padding: theme.pad(compact),
-      color: theme.surface,
+      padding: padding,
+      color: decoration == null ? theme.surface : null,
+      decoration: decoration,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (phone.isNotEmpty) ...[
-            _phoneRow(phone),
+            _phoneRow(phone, foreground: foreground, iconColor: iconColor),
             SizedBox(height: compact ? 8 : 10),
           ],
           if (email.isNotEmpty) ...[
-            _row(Icons.mail_outline_rounded, email),
+            _row(Icons.mail_outline_rounded, email, foreground: foreground, iconColor: iconColor),
             SizedBox(height: compact ? 8 : 10),
           ],
           if (address.isNotEmpty) ...[
-            _row(Icons.location_on_outlined, address),
+            _row(Icons.location_on_outlined, address, foreground: foreground, iconColor: iconColor),
             SizedBox(height: compact ? 12 : 14),
           ],
           if (social.isNotEmpty)
@@ -56,6 +93,8 @@ class CatalogStoreFooter extends StatelessWidget {
                     url: link.url,
                     theme: theme,
                     compact: compact,
+                    iconColor: iconColor,
+                    background: onColor ? Colors.white.withValues(alpha: 0.14) : null,
                   ),
               ],
             ),
@@ -70,18 +109,21 @@ class CatalogStoreFooter extends StatelessWidget {
     return (primary['whatsapp'] as String? ?? '').trim();
   }
 
-  Widget _row(IconData icon, String text) {
+  Widget _row(IconData icon, String text, {Color? foreground, required Color iconColor}) {
+    final style = foreground == null
+        ? theme.body(compact, size: 12)
+        : theme.body(compact, size: 12).copyWith(color: foreground);
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Icon(icon, size: compact ? 18 : 20, color: theme.primary),
+        Icon(icon, size: compact ? 18 : 20, color: iconColor),
         const SizedBox(width: 8),
-        Expanded(child: Text(text, style: theme.body(compact, size: 12))),
+        Expanded(child: Text(text, style: style)),
       ],
     );
   }
 
-  Widget _phoneRow(String phone) {
+  Widget _phoneRow(String phone, {Color? foreground, required Color iconColor}) {
     final digits = phone.replaceAll(RegExp(r'\D'), '');
     final canCall = digits.isNotEmpty;
 
@@ -100,9 +142,16 @@ class CatalogStoreFooter extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Icon(Icons.phone_outlined, size: compact ? 18 : 20, color: theme.primary),
+              Icon(Icons.phone_outlined, size: compact ? 18 : 20, color: iconColor),
               const SizedBox(width: 8),
-              Expanded(child: Text(phone, style: theme.body(compact, size: 12))),
+              Expanded(
+                child: Text(
+                  phone,
+                  style: foreground == null
+                      ? theme.body(compact, size: 12)
+                      : theme.body(compact, size: 12).copyWith(color: foreground),
+                ),
+              ),
             ],
           ),
         ),
@@ -169,12 +218,16 @@ class _SocialIconButton extends StatelessWidget {
     required this.url,
     required this.theme,
     required this.compact,
+    this.iconColor,
+    this.background,
   });
 
   final IconData icon;
   final String url;
   final LayoutTheme theme;
   final bool compact;
+  final Color? iconColor;
+  final Color? background;
 
   Future<void> _open() async {
     final uri = Uri.tryParse(url);
@@ -186,7 +239,7 @@ class _SocialIconButton extends StatelessWidget {
   Widget build(BuildContext context) {
     final size = compact ? 40.0 : 44.0;
     return Material(
-      color: theme.primary.withValues(alpha: 0.1),
+      color: background ?? theme.primary.withValues(alpha: 0.1),
       shape: const CircleBorder(),
       child: InkWell(
         onTap: _open,
@@ -194,7 +247,7 @@ class _SocialIconButton extends StatelessWidget {
         child: SizedBox(
           width: size,
           height: size,
-          child: Icon(icon, size: compact ? 20 : 22, color: theme.primary),
+          child: Icon(icon, size: compact ? 20 : 22, color: iconColor ?? theme.primary),
         ),
       ),
     );

@@ -3,6 +3,7 @@ import 'package:webapp/features/templates/preview/layout_theme.dart';
 import 'package:webapp/features/templates/preview/shared/cart_preview_shell.dart';
 import 'package:webapp/features/templates/preview/shared/catalog_item_pricing.dart';
 import 'package:webapp/features/templates/preview/shared/catalog_product_utils.dart';
+import 'package:webapp/features/templates/preview/shared/catalog_listing_skins.dart';
 import 'package:webapp/features/templates/preview/shared/site_image.dart';
 
 /// Responsive catalog product grid (ecommerce & restaurant listings).
@@ -78,6 +79,17 @@ class CatalogProductGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (items.isEmpty) return const SizedBox.shrink();
+
+    if (theme.variant >= 2 && theme.variant <= 6) {
+      return CatalogListingSkins.products(
+        items: items,
+        theme: theme,
+        compact: compact,
+        showAddToCart: showAddToCart,
+        cart: cart,
+        onProductTap: onProductTap,
+      );
+    }
 
     return LayoutBuilder(
       builder: (context, constraints) {

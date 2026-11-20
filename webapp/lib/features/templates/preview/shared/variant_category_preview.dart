@@ -5,6 +5,7 @@ import 'package:webapp/features/templates/preview/layouts/site_layout_blocks.dar
 import 'package:webapp/features/templates/preview/shared/cart_preview_shell.dart';
 import 'package:webapp/features/templates/preview/shared/catalog_auto_banner_carousel.dart';
 import 'package:webapp/features/templates/preview/shared/catalog_item_pricing.dart';
+import 'package:webapp/features/templates/preview/shared/catalog_listing_skins.dart';
 import 'package:webapp/features/templates/preview/shared/catalog_search_icon.dart';
 import 'package:webapp/features/templates/preview/shared/catalog_sort_controls.dart';
 import 'package:webapp/features/templates/preview/shared/catalog_product_detail_page.dart';
@@ -113,35 +114,47 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
     required ValueChanged<Map<String, dynamic>> onProductTap,
   }) {
     final sorted = sortCatalogItems(items, _catalogSort);
-    return _block(
-      title,
-      Column(
-        crossAxisAlignment: CrossAxisAlignment.stretch,
-        children: [
-          CatalogSortDropdown(
-            value: _catalogSort,
-            theme: theme,
-            compact: compact,
-            onChanged: (value) => setState(() => _catalogSort = value),
-          ),
-          SizedBox(height: compact ? 10 : 12),
-          sorted.isEmpty
-              ? Padding(
-                  padding: EdgeInsets.symmetric(vertical: compact ? 8 : 12),
-                  child: Text(
-                    _catalogSearchOpen
-                        ? (_searchQuery.trim().isEmpty
-                            ? 'No items to show.'
-                            : 'No matches found.')
-                        : 'No items in this category yet.',
-                    style: theme.body(compact, size: 12),
-                  ),
-                )
-              : _tertiaryItems(sorted, theme, theme.tertiaryLayout, cart, onProductTap: onProductTap),
-        ],
-      ),
-      theme,
+    final listing = Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        CatalogSortDropdown(
+          value: _catalogSort,
+          theme: theme,
+          compact: compact,
+          onChanged: (value) => setState(() => _catalogSort = value),
+        ),
+        SizedBox(height: compact ? 10 : 12),
+        sorted.isEmpty
+            ? Padding(
+                padding: EdgeInsets.symmetric(vertical: compact ? 8 : 12),
+                child: Text(
+                  _catalogSearchOpen
+                      ? (_searchQuery.trim().isEmpty
+                          ? 'No items to show.'
+                          : 'No matches found.')
+                      : 'No items in this category yet.',
+                  style: theme.body(compact, size: 12),
+                ),
+              )
+            : _tertiaryItems(sorted, theme, theme.tertiaryLayout, cart, onProductTap: onProductTap),
+      ],
     );
+
+    if (CatalogListingSkins.isCustom(theme.variant)) {
+      return Padding(
+        padding: theme.pad(compact),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            CatalogListingSkins.sectionHeader(title, theme, compact),
+            SizedBox(height: compact ? 12 : 14),
+            listing,
+          ],
+        ),
+      );
+    }
+
+    return _block(title, listing, theme);
   }
 
   @override
@@ -530,38 +543,48 @@ class _VariantCategoryPreviewState extends State<VariantCategoryPreview> {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         reelsStrip,
-        Padding(
-          padding: theme.pad(compact),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                categoryTitle.toUpperCase(),
-                style: theme.body(compact, size: 10).copyWith(letterSpacing: 2),
-              ),
-              SizedBox(height: compact ? 10 : 12),
-              SizedBox(
-                height: compact ? 96 : 108,
-                child: ListView.separated(
-                  scrollDirection: Axis.horizontal,
-                  itemCount: categories.length,
-                  separatorBuilder: (_, __) => SizedBox(width: compact ? 12 : 16),
-                  itemBuilder: (context, index) {
-                    final selected = index == selectedIndex;
-                    return GestureDetector(
-                      onTap: () => setState(() => _selectedCategoryIndex = index),
-                      child: _categoryRoundTile(
-                        categories[index],
-                        theme: theme,
-                        selected: selected,
+        CatalogListingSkins.isCustom(theme.variant)
+            ? CatalogListingSkins.categoryBlock(
+                title: categoryTitle,
+                categories: categories,
+                selectedIndex: selectedIndex,
+                theme: theme,
+                compact: compact,
+                onSelect: (index) => setState(() => _selectedCategoryIndex = index),
+                labelOf: _label,
+              )
+            : Padding(
+                padding: theme.pad(compact),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      categoryTitle.toUpperCase(),
+                      style: theme.body(compact, size: 10).copyWith(letterSpacing: 2),
+                    ),
+                    SizedBox(height: compact ? 10 : 12),
+                    SizedBox(
+                      height: compact ? 96 : 108,
+                      child: ListView.separated(
+                        scrollDirection: Axis.horizontal,
+                        itemCount: categories.length,
+                        separatorBuilder: (_, _) => SizedBox(width: compact ? 12 : 16),
+                        itemBuilder: (context, index) {
+                          final selected = index == selectedIndex;
+                          return GestureDetector(
+                            onTap: () => setState(() => _selectedCategoryIndex = index),
+                            child: _categoryRoundTile(
+                              categories[index],
+                              theme: theme,
+                              selected: selected,
+                            ),
+                          );
+                        },
                       ),
-                    );
-                  },
+                    ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
         _catalogProductsBlock(
           title: widget.tertiaryTitle,
           items: filtered,

@@ -88,20 +88,80 @@ class LayoutTheme {
   EdgeInsets pad(bool compact) =>
       EdgeInsets.all(compact ? spacing * 0.75 : spacing);
 
-  BoxDecoration cardDecoration() => BoxDecoration(
-        color: surface,
-        borderRadius: BorderRadius.circular(radius),
-        border: cardStyle == 'bordered' || cardStyle == 'line'
-            ? Border.all(color: text.withValues(alpha: 0.12))
-            : null,
-        boxShadow: cardStyle == 'elevated' || cardStyle == 'shadow'
-            ? [
-                BoxShadow(
-                  color: secondary.withValues(alpha: 0.08),
-                  blurRadius: 16,
-                  offset: const Offset(0, 6),
-                ),
-              ]
-            : null,
-      );
+  BoxDecoration cardDecoration() {
+    final shape = BorderRadius.circular(radius);
+    // Extra finishes for templates 2–6. Elevated, bordered, shadow, and flat
+    // stay on the original decoration so template 1 does not shift.
+    switch (cardStyle) {
+      case 'glass':
+        return BoxDecoration(
+          color: surface.withValues(alpha: 0.9),
+          borderRadius: shape,
+          border: Border.all(color: primary.withValues(alpha: 0.16)),
+          boxShadow: [
+            BoxShadow(
+              color: primary.withValues(alpha: 0.14),
+              blurRadius: 28,
+              offset: const Offset(0, 12),
+            ),
+          ],
+        );
+      case 'soft':
+        return BoxDecoration(
+          color: surface,
+          borderRadius: shape,
+          boxShadow: [
+            BoxShadow(
+              color: primary.withValues(alpha: 0.1),
+              blurRadius: 22,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        );
+      case 'hard':
+        return BoxDecoration(
+          color: surface,
+          borderRadius: shape,
+          border: Border.all(color: text, width: 2),
+        );
+      case 'gold':
+        return BoxDecoration(
+          color: surface,
+          borderRadius: shape,
+          border: Border.all(color: primary.withValues(alpha: 0.55)),
+        );
+      case 'neon':
+        return BoxDecoration(
+          color: surface,
+          borderRadius: shape,
+          border: Border.all(color: primary.withValues(alpha: 0.85)),
+          boxShadow: [
+            BoxShadow(color: primary.withValues(alpha: 0.28), blurRadius: 16),
+          ],
+        );
+      case 'organic':
+        return BoxDecoration(
+          color: surface,
+          borderRadius: shape,
+          border: Border.all(color: accent.withValues(alpha: 0.45)),
+        );
+      default:
+        return BoxDecoration(
+          color: surface,
+          borderRadius: shape,
+          border: cardStyle == 'bordered' || cardStyle == 'line'
+              ? Border.all(color: text.withValues(alpha: 0.12))
+              : null,
+          boxShadow: cardStyle == 'elevated' || cardStyle == 'shadow'
+              ? [
+                  BoxShadow(
+                    color: secondary.withValues(alpha: 0.08),
+                    blurRadius: 16,
+                    offset: const Offset(0, 6),
+                  ),
+                ]
+              : null,
+        );
+    }
+  }
 }

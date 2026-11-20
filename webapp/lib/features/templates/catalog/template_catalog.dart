@@ -50,9 +50,9 @@ class TemplateDefinition {
   }
 }
 
-/// One default template per category.
+/// Six visually distinct templates per category. Template 1 is the original.
 abstract final class TemplateCatalog {
-  static const int templatesPerCategory = 1;
+  static const int templatesPerCategory = 6;
 
   static List<TemplateDefinition> forCategory(int type) {
     return all.where((template) => template.type == type).toList();

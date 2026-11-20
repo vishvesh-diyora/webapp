@@ -68,8 +68,24 @@ class _CatalogAutoBannerCarouselState extends State<CatalogAutoBannerCarousel> {
     final banners = widget.banners.take(3).toList();
     if (banners.isEmpty) return const SizedBox.shrink();
 
-    final height = widget.compact ? 148.0 : 188.0;
-    final pad = widget.theme.pad(widget.compact);
+    final variant = widget.theme.variant;
+    final custom = variant >= 2 && variant <= 6;
+    final height = !custom
+        ? (widget.compact ? 148.0 : 188.0)
+        : switch (variant) {
+            2 => widget.compact ? 176.0 : 228.0,
+            3 => widget.compact ? 168.0 : 214.0,
+            4 => widget.compact ? 190.0 : 248.0,
+            5 => widget.compact ? 160.0 : 208.0,
+            _ => widget.compact ? 164.0 : 210.0,
+          };
+    final pad = !custom
+        ? widget.theme.pad(widget.compact)
+        : switch (variant) {
+            2 || 4 => EdgeInsets.zero,
+            5 => EdgeInsets.all(widget.compact ? 18 : 24),
+            _ => widget.theme.pad(widget.compact),
+          };
 
     return Padding(
       padding: pad,

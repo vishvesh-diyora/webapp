@@ -133,6 +133,19 @@ class _GiftRevealPreviewState extends State<GiftRevealPreview> with TickerProvid
       borderRadius: BorderRadius.circular(theme.radius),
     );
 
+    final exclusive = _exclusiveLayout(
+      variant: v,
+      pad: pad,
+      title: title,
+      cover: cover,
+      theme: theme,
+      musicUrl: musicUrl,
+      messages: messages,
+      revealImages: revealImages,
+      tertiary: tertiary,
+    );
+    if (exclusive != null) return exclusive;
+
     if (v % 4 == 0) {
       return [
         cover,
@@ -193,6 +206,176 @@ class _GiftRevealPreviewState extends State<GiftRevealPreview> with TickerProvid
         ),
       ),
     ];
+  }
+
+  List<Widget>? _exclusiveLayout({
+    required int variant,
+    required EdgeInsets pad,
+    required String title,
+    required Widget cover,
+    required LayoutTheme theme,
+    required String musicUrl,
+    required List<Map<dynamic, dynamic>> messages,
+    required List<String> revealImages,
+    required Map<String, dynamic> tertiary,
+  }) {
+    if (variant < 2 || variant > 6) return null;
+    final subname = widget.document.subname;
+    final story = <Widget>[
+      _countdown(theme),
+      ..._messages(messages, theme),
+      ..._finale(tertiary, theme),
+      if (musicUrl.isNotEmpty) _music(musicUrl, theme),
+      if (revealImages.isNotEmpty) _revealStrip(revealImages, theme),
+    ];
+
+    switch (variant) {
+      case 2:
+        return [
+          Container(
+            width: double.infinity,
+            padding: pad.copyWith(top: pad.top + (widget.compact ? 12 : 20), bottom: pad.bottom + 8),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [theme.primary, theme.secondary],
+              ),
+            ),
+            child: Column(
+              children: [
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: theme.heading(widget.compact, size: 30).copyWith(color: Colors.white),
+                ),
+                if (subname.isNotEmpty) ...[
+                  SizedBox(height: widget.compact ? 6 : 8),
+                  Text(
+                    subname,
+                    textAlign: TextAlign.center,
+                    style: theme.body(widget.compact).copyWith(color: Colors.white70),
+                  ),
+                ],
+              ],
+            ),
+          ),
+          Padding(
+            padding: pad,
+            child: Column(children: [cover, SizedBox(height: widget.compact ? 14 : 18), ...story]),
+          ),
+        ];
+      case 3:
+        return [
+          Padding(
+            padding: pad,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'A PRIVATE NOTE',
+                  style: theme.body(widget.compact, size: 11).copyWith(
+                        color: theme.primary,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 2.8,
+                      ),
+                ),
+                SizedBox(height: widget.compact ? 8 : 10),
+                Text(title, style: theme.heading(widget.compact, size: widget.compact ? 30 : 36)),
+                Container(
+                  height: 3,
+                  width: 56,
+                  margin: EdgeInsets.only(top: widget.compact ? 10 : 12),
+                  color: theme.accent,
+                ),
+                SizedBox(height: widget.compact ? 16 : 20),
+                cover,
+                SizedBox(height: widget.compact ? 14 : 18),
+                ...story,
+              ],
+            ),
+          ),
+        ];
+      case 4:
+        return [
+          cover,
+          Padding(
+            padding: EdgeInsets.fromLTRB(pad.left, 0, pad.right, pad.bottom),
+            child: Transform.translate(
+              offset: Offset(0, widget.compact ? -28 : -36),
+              child: Container(
+                width: double.infinity,
+                padding: pad,
+                decoration: theme.cardDecoration(),
+                child: Column(children: story),
+              ),
+            ),
+          ),
+        ];
+      case 5:
+        return [
+          Padding(
+            padding: pad,
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  decoration: BoxDecoration(color: theme.primary, borderRadius: BorderRadius.circular(999)),
+                  child: Text(
+                    'FOR YOU',
+                    style: theme.body(widget.compact, size: 11).copyWith(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 2,
+                        ),
+                  ),
+                ),
+                SizedBox(height: widget.compact ? 12 : 14),
+                Text(title, textAlign: TextAlign.center, style: theme.heading(widget.compact, size: 30)),
+                if (subname.isNotEmpty) ...[
+                  SizedBox(height: widget.compact ? 6 : 8),
+                  Text(subname, textAlign: TextAlign.center, style: theme.body(widget.compact).copyWith(color: theme.primary)),
+                ],
+                if (revealImages.isNotEmpty) _revealStrip(revealImages, theme),
+                SizedBox(height: widget.compact ? 12 : 16),
+                _countdown(theme),
+                cover,
+                ..._messages(messages, theme),
+                ..._finale(tertiary, theme),
+                if (musicUrl.isNotEmpty) _music(musicUrl, theme),
+              ],
+            ),
+          ),
+        ];
+      default:
+        return [
+          Container(height: widget.compact ? 6 : 8, color: theme.primary),
+          Padding(
+            padding: pad,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  title,
+                  style: theme.heading(widget.compact, size: widget.compact ? 28 : 34).copyWith(letterSpacing: -0.6),
+                ),
+                if (subname.isNotEmpty) ...[
+                  SizedBox(height: widget.compact ? 6 : 8),
+                  Text(subname, style: theme.body(widget.compact).copyWith(color: theme.primary, fontWeight: FontWeight.w600)),
+                ],
+                SizedBox(height: widget.compact ? 14 : 18),
+                _countdown(theme),
+                ..._messages(messages, theme),
+                ..._finale(tertiary, theme),
+                SizedBox(height: widget.compact ? 8 : 12),
+                cover,
+                if (musicUrl.isNotEmpty) _music(musicUrl, theme),
+                if (revealImages.isNotEmpty) _revealStrip(revealImages, theme),
+              ],
+            ),
+          ),
+        ];
+    }
   }
 
   Widget _countdown(LayoutTheme theme) {
@@ -260,7 +443,7 @@ class _GiftRevealPreviewState extends State<GiftRevealPreview> with TickerProvid
         child: ListView.separated(
           scrollDirection: Axis.horizontal,
           itemCount: revealImages.length,
-          separatorBuilder: (_, __) => const SizedBox(width: 8),
+          separatorBuilder: (_, _) => const SizedBox(width: 8),
           itemBuilder: (context, index) => ImageAssetService.buildImage(
             path: revealImages[index],
             width: widget.compact ? 72 : 88,
